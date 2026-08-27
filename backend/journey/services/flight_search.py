@@ -51,7 +51,31 @@ class FlightSearchService:
 
         self._last_call_at = now
 
-        raw_json: dict[str, Any] = response.json()
+        # FR-012: unparseable body → ERROR outcome; persist raw bytes, raise
+        try:
+            raw_json: dict[str, Any] = response.json()
+        except Exception:
+            raw_str = response.text
+            rec = SearchRecord(
+                search_id=str(uuid.uuid4()),
+                journey_id=journey_id,
+                requested_at=requested_at,
+                responded_at=responded_at,
+                raw_response_json=raw_str,
+                status_code=response.status_code,
+                atlas_status=-1,
+                option_count=0,
+                budget_before=budget_before,
+                budget_after=budget_after,
+                outcome=SearchOutcome.ERROR,
+            )
+            self._repo.save_search_record(rec)
+            raise AtlasSearchError(
+                "Response body could not be parsed as JSON",
+                status_code=response.status_code,
+                atlas_status=None,
+            )
+
         raw_str = json.dumps(raw_json)
 
         # --- 429 rate-limit: save SearchRecord with RATE_LIMITED, then raise ---
@@ -98,6 +122,28 @@ class FlightSearchService:
             )
 
         # --- Map routings (may be empty) ---
+        # FR-012: routings key absent → ERROR, not EMPTY
+        if "routings" not in raw_json:
+            rec = SearchRecord(
+                search_id=str(uuid.uuid4()),
+                journey_id=journey_id,
+                requested_at=requested_at,
+                responded_at=responded_at,
+                raw_response_json=raw_str,
+                status_code=response.status_code,
+                atlas_status=atlas_status,
+                option_count=0,
+                budget_before=budget_before,
+                budget_after=budget_after,
+                outcome=SearchOutcome.ERROR,
+            )
+            self._repo.save_search_record(rec)
+            raise AtlasSearchError(
+                "Response body missing required 'routings' key",
+                status_code=response.status_code,
+                atlas_status=atlas_status,
+            )
+
         routings = raw_json.get("routings", [])
         search_id = str(uuid.uuid4())
         options = self._map_routings(routings, journey_id, search_id_placeholder=search_id, now=now)

@@ -94,8 +94,8 @@ decremented for the rejected call.
 
 1. **Given** the provider returns HTTP 429 with `retryAfter: 5`,
    **When** the system receives the rejection,
-   **Then** no retry is issued before 5 seconds have elapsed, and the outcome is recorded
-   in the audit trail.
+   **Then** no retry is issued before 5 seconds have elapsed, the call budget is
+   decremented by one, and the outcome is recorded as `RATE_LIMITED` in the audit trail.
 
 2. **Given** the journey's call budget has reached zero,
    **When** a search is requested,
@@ -118,6 +118,10 @@ decremented for the rejected call.
   is noted.
 - What if `fid` or `routingIdentifier` is absent from an option? The option is rejected
   from the result set and the omission recorded in the audit trail.
+- What if the provider returns HTTP 200 with `status: 0` but the body cannot be parsed,
+  or the `routings` key is absent? The system treats this as an `ERROR` outcome: the raw
+  bytes are persisted, the call budget is decremented, and an error is raised to the
+  caller. Zero options are never silently inferred from an unreadable body.
 
 ---
 
@@ -142,11 +146,19 @@ decremented for the rejected call.
 - **FR-008**: The system MUST record, for every returned option, the available seat count
   and the provider's sell-out risk indicator per segment.
 - **FR-009**: The system MUST decrement the journey's call budget by one for every search
-  submitted, regardless of whether options are returned or the request is rejected.
+  submitted, regardless of outcome — including zero-option responses, provider errors
+  (non-zero `status`), and rate-limit rejections (HTTP 429). A rate-limit rejection does
+  not exempt the call from budget accounting; the request was submitted and consumed
+  provider quota.
 - **FR-010**: The system MUST handle a provider response containing zero options without
   raising an error, and MUST indicate that no options were returned.
 - **FR-011**: The system MUST NOT modify, enrich, supplement, or infer any value in a
   returned option; every recorded field must be traceable to the provider response.
+- **FR-012**: When the provider returns a response whose body cannot be parsed as valid
+  JSON, or whose parsed body lacks the `routings` key, the system MUST treat the response
+  as an `ERROR` outcome: persist the raw response bytes, decrement the call budget, record
+  the `SearchRecord` with outcome `ERROR`, and raise an error to the caller. The system
+  MUST NOT silently treat an unreadable or structurally invalid body as zero options.
 
 ### Non-Functional Requirements
 
@@ -192,6 +204,10 @@ decremented for the rejected call.
   empty `routings` array.
 - **SC-006**: Multi-leg options (more than one entry in `fromSegments`) are always
   distinguished from single-leg options in the recorded result.
+- **SC-007**: When the provider returns an unparseable body or a body lacking the
+  `routings` key, the system raises an error, persists the raw response, and records
+  outcome `ERROR` — confirmed by test against a mocked malformed response. The system
+  MUST NOT return a `SearchResult` with `option_count = 0` in this case.
 
 ## Assumptions
 
@@ -207,3 +223,10 @@ decremented for the rejected call.
 - `separateBookings` is recorded as part of the `FlightOption` for downstream use but is
   not acted upon in this feature.
 - Scoring, ranking, filtering, and presentation of results are explicitly out of scope.
+
+## Clarifications
+
+### Session 2026-08-28
+
+- Q: Should the call budget be decremented when the provider returns HTTP 429 (rate-limit rejection)? → A: Yes — budget IS decremented on 429. The request was submitted and consumed provider quota. (FR-009 updated; US3 scenario 1 updated.)
+- Q: What MUST the system do when the provider returns a structurally invalid or unparseable response body? → A: Treat as `ERROR` outcome — persist raw bytes, decrement budget, record `SearchRecord`, raise error. MUST NOT silently return zero options. (FR-012 added; SC-007 added; Edge Cases updated.)

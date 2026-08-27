@@ -445,3 +445,114 @@ class TestRateLimitAndBudget:
         with pytest.raises(RateLimitError):
             svc.search(journey_id="journey-001", now=BASE_NOW)
         http_client.post.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# FR-012: Malformed response body handling (SC-007)
+# ---------------------------------------------------------------------------
+
+class TestMalformedResponseBody:
+    """FR-012: unparseable body or missing 'routings' key → ERROR outcome, not EMPTY."""
+
+    def test_unparseable_json_raises_atlas_search_error(self) -> None:
+        """Body that cannot be parsed as JSON raises AtlasSearchError."""
+        from journey.errors import AtlasSearchError
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.side_effect = ValueError("not valid json")
+        mock_resp.text = "not valid json"
+        svc, _, _ = _make_service(http_response=mock_resp)
+
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+    def test_unparseable_json_persists_search_record(self) -> None:
+        """SearchRecord with outcome ERROR is saved even when body cannot be parsed."""
+        from journey.errors import AtlasSearchError
+        from journey.models.flight import SearchOutcome
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.side_effect = ValueError("not valid json")
+        mock_resp.text = "not valid json"
+        svc, repo, _ = _make_service(http_response=mock_resp)
+
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+        repo.save_search_record.assert_called_once()
+        saved = repo.save_search_record.call_args[0][0]
+        assert saved.outcome == SearchOutcome.ERROR
+        assert saved.raw_response_json == "not valid json"
+
+    def test_unparseable_json_budget_decremented(self) -> None:
+        """Call budget is decremented even when body cannot be parsed (FR-009)."""
+        from journey.errors import AtlasSearchError
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.side_effect = ValueError("not valid json")
+        mock_resp.text = "not valid json"
+        svc, repo, _ = _make_service(http_response=mock_resp)
+
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+        repo.decrement_call_budget.assert_called_once_with("journey-001")
+
+    def test_missing_routings_key_raises_atlas_search_error(self) -> None:
+        """Valid JSON body lacking 'routings' key raises AtlasSearchError, not silent EMPTY."""
+        from journey.errors import AtlasSearchError
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"status": 0, "msg": "ok"}
+        svc, _, _ = _make_service(http_response=mock_resp)
+
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+    def test_missing_routings_key_persists_error_outcome(self) -> None:
+        """SearchRecord with outcome ERROR is saved when 'routings' key is absent."""
+        from journey.errors import AtlasSearchError
+        from journey.models.flight import SearchOutcome
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"status": 0, "msg": "ok"}
+        svc, repo, _ = _make_service(http_response=mock_resp)
+
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+        repo.save_search_record.assert_called_once()
+        saved = repo.save_search_record.call_args[0][0]
+        assert saved.outcome == SearchOutcome.ERROR
+
+    def test_missing_routings_key_not_treated_as_empty(self) -> None:
+        """Missing 'routings' key must NOT produce a SearchResult with option_count=0."""
+        from journey.errors import AtlasSearchError
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"status": 0, "msg": "ok"}
+        svc, _, _ = _make_service(http_response=mock_resp)
+
+        # Must raise — must never return a SearchResult
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+    def test_missing_routings_key_budget_decremented(self) -> None:
+        """Call budget is decremented when 'routings' key is absent (FR-009)."""
+        from journey.errors import AtlasSearchError
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"status": 0, "msg": "ok"}
+        svc, repo, _ = _make_service(http_response=mock_resp)
+
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id="journey-001", now=BASE_NOW)
+
+        repo.decrement_call_budget.assert_called_once_with("journey-001")
