@@ -256,3 +256,90 @@ class TestGetOptionsRaisesIfSearchRecordNotFound:
         repo = JourneyRepository()
         with pytest.raises(SearchRecordNotFoundError):
             repo.get_options(search_id="does-not-exist")
+
+
+class TestMalformedResponsePersistence:
+    """FR-012 / SC-007: malformed body still persists SearchRecord with ERROR outcome."""
+
+    def setup_method(self) -> None:
+        _fresh_db()
+
+    def test_unparseable_json_persists_error_search_record(self) -> None:
+        """Unparseable body → SearchRecord with ERROR outcome and raw text in DB."""
+        from journey.storage.repository import JourneyRepository
+        from journey.services.flight_search import FlightSearchService
+        from journey.models.flight import SearchOutcome
+        from journey.errors import AtlasSearchError
+
+        repo = JourneyRepository()
+        record = _make_journey(repo)
+        budget_before = record.call_budget
+        now = datetime(2026, 9, 5, 2, 31, 0, tzinfo=timezone.utc)
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.side_effect = ValueError("not valid json")
+        mock_response.text = "not valid json"
+
+        mock_client = MagicMock()
+        mock_client.post.return_value = mock_response
+
+        svc = FlightSearchService(repo=repo, http_client=mock_client)
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id=record.journey_id, now=now)
+
+        from journey.storage.db import get_engine
+        from sqlalchemy import text
+
+        with get_engine().connect() as conn:
+            row = conn.execute(
+                text("SELECT outcome, raw_response_json FROM search_records WHERE journey_id = :jid"),
+                {"jid": record.journey_id},
+            ).fetchone()
+
+        assert row is not None, "SearchRecord must be persisted even when body is unparseable"
+        assert row[0] == SearchOutcome.ERROR
+        assert row[1] == "not valid json"
+
+        reloaded = repo.get_journey(record.journey_id)
+        assert reloaded.call_budget == budget_before - 1
+
+    def test_missing_routings_key_persists_error_search_record(self) -> None:
+        """Missing 'routings' key → SearchRecord with ERROR outcome in DB; not EMPTY."""
+        from journey.storage.repository import JourneyRepository
+        from journey.services.flight_search import FlightSearchService
+        from journey.models.flight import SearchOutcome
+        from journey.errors import AtlasSearchError
+
+        repo = JourneyRepository()
+        record = _make_journey(repo)
+        budget_before = record.call_budget
+        now = datetime(2026, 9, 5, 2, 31, 0, tzinfo=timezone.utc)
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": 0, "msg": "ok"}
+
+        mock_client = MagicMock()
+        mock_client.post.return_value = mock_response
+
+        svc = FlightSearchService(repo=repo, http_client=mock_client)
+        with pytest.raises(AtlasSearchError):
+            svc.search(journey_id=record.journey_id, now=now)
+
+        from journey.storage.db import get_engine
+        from sqlalchemy import text
+
+        with get_engine().connect() as conn:
+            row = conn.execute(
+                text("SELECT outcome, raw_response_json FROM search_records WHERE journey_id = :jid"),
+                {"jid": record.journey_id},
+            ).fetchone()
+
+        assert row is not None, "SearchRecord must be persisted when 'routings' key is absent"
+        assert row[0] == SearchOutcome.ERROR
+        raw = json.loads(row[1])
+        assert "routings" not in raw
+
+        reloaded = repo.get_journey(record.journey_id)
+        assert reloaded.call_budget == budget_before - 1
