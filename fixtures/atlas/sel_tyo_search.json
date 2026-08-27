@@ -1,0 +1,1004 @@
+{
+  "routings": [
+    {
+      "fid": "<REDACTED>",
+      "routingIdentifier": "<REDACTED>",
+      "supportCreditTransPayment": "0",
+      "supportPaymentMethods": [
+        1
+      ],
+      "currency": "USD",
+      "adultPrice": 62.43,
+      "adultTax": 29.35,
+      "adultDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 62.43,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 29.35,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "childPrice": 62.43,
+      "childTax": 29.35,
+      "childDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 62.43,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 29.35,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "infantPrice": 20.81,
+      "infantTax": 0.0,
+      "infantDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 20.81,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 0.0,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "childMandatorySeatingFee": null,
+      "infantAllowed": true,
+      "transactionFeePerPax": 0.0,
+      "transactionFee": 0.0,
+      "transactionFeeMode": "PER_PAX",
+      "nationalityType": 0,
+      "nationality": "",
+      "suitAge": "",
+      "PaxType": "ADT",
+      "fromSegments": [
+        {
+          "segmentIndex": 1,
+          "carrier": "ZE",
+          "flightNumber": "ZE609",
+          "depAirport": "ICN",
+          "depTime": "202609051030",
+          "arrAirport": "NRT",
+          "arrTime": "202609051300",
+          "stopCities": "",
+          "duration": 150,
+          "codeShare": false,
+          "cabin": "S",
+          "cabinClass": 1,
+          "seatCount": 9,
+          "aircraftCode": "738",
+          "depTerminal": "",
+          "arrTerminal": "",
+          "operatingCarrier": "",
+          "operatingFlightnumber": "",
+          "fareFamily": "Discount Fare"
+        }
+      ],
+      "retSegments": [],
+      "combineIndexs": [],
+      "rule": {
+        "hasBaggage": 1,
+        "baggageElements": [
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 0,
+            "baggagePiece": 1,
+            "baggageWeight": 15,
+            "baggageSize": "L+W+H<=203cm",
+            "isAllWeight": false
+          },
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 1,
+            "baggagePiece": 1,
+            "baggageWeight": 15,
+            "baggageSize": "L+W+H<=203cm",
+            "isAllWeight": false
+          },
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 2,
+            "baggagePiece": 0,
+            "baggageWeight": 0,
+            "baggageSize": "L+W+H<=203cm",
+            "isAllWeight": false
+          }
+        ],
+        "refundRules": [
+          {
+            "refundType": 0,
+            "refundStatus": "H",
+            "refundMethod": null,
+            "refundFee": 87975.9,
+            "currency": "KRW",
+            "refNoshow": "H",
+            "refNoShowCondition": 0,
+            "refNoshowFee": 87975.9,
+            "ruleDetailList": [
+              {
+                "ruleId": 41322,
+                "status": "F",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 525600,
+                "endMinute": 131040,
+                "amount": 0.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 41323,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 131040,
+                "endMinute": 87840,
+                "amount": 30000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 41324,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 87840,
+                "endMinute": 44640,
+                "amount": 50000.0,
+                "currency": "KRW"
+              }
+            ]
+          }
+        ],
+        "changesRules": [
+          {
+            "changesType": 0,
+            "changesStatus": "T",
+            "changesFee": 0.0,
+            "currency": "KRW",
+            "revNoshow": "T",
+            "revNoShowCondition": 0,
+            "revNoshowFee": 0.0,
+            "ruleDetailList": [
+              {
+                "ruleId": 65914,
+                "status": "F",
+                "refundMethod": null,
+                "startMinute": 525600,
+                "endMinute": 20160,
+                "amount": 0.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 65915,
+                "status": "H",
+                "refundMethod": null,
+                "startMinute": 20160,
+                "endMinute": 10080,
+                "amount": 40000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 65916,
+                "status": "H",
+                "refundMethod": null,
+                "startMinute": 10080,
+                "endMinute": 60,
+                "amount": 60000.0,
+                "currency": "KRW"
+              }
+            ]
+          }
+        ],
+        "serviceElements": [
+          {
+            "hasFreeSeat": 0,
+            "hasFreeMeal": 0
+          }
+        ]
+      },
+      "ancillaryProductElements": [
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_15KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 1,
+          "price": 84.47,
+          "currency": "USD",
+          "vendorPrice": 119038.19,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 15,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_15KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        },
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_20KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 1,
+          "price": 112.43,
+          "currency": "USD",
+          "vendorPrice": 158431.68,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 20,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_20KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        },
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_10KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 1,
+          "price": 61.48,
+          "currency": "USD",
+          "vendorPrice": 86631.04,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 10,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_10KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        }
+      ],
+      "vendorFare": null,
+      "bundleOptions": [],
+      "links": null,
+      "separateBookings": false,
+      "refreshTime": "2026-08-15T09:21:03Z",
+      "expireTime": "2026-08-15T09:36:47Z",
+      "displayFare": null,
+      "ancillarySupported": [
+        "seat",
+        "luggage"
+      ],
+      "cardChargeList": null,
+      "tags": null,
+      "riskSellout": false,
+      "residentCode": null
+    },
+    {
+      "fid": "<REDACTED>",
+      "routingIdentifier": "<REDACTED>",
+      "supportCreditTransPayment": "0",
+      "supportPaymentMethods": [
+        1
+      ],
+      "currency": "USD",
+      "adultPrice": 33.6,
+      "adultTax": 28.69,
+      "adultDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 33.6,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 28.69,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "childPrice": 33.6,
+      "childTax": 28.69,
+      "childDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 33.6,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 28.69,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "infantPrice": 7.28,
+      "infantTax": 0.0,
+      "infantDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 7.28,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 0.0,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "childMandatorySeatingFee": null,
+      "infantAllowed": true,
+      "transactionFeePerPax": 0.0,
+      "transactionFee": 0.0,
+      "transactionFeeMode": "PER_PAX",
+      "nationalityType": 0,
+      "nationality": "",
+      "suitAge": "",
+      "PaxType": "ADT",
+      "fromSegments": [
+        {
+          "segmentIndex": 1,
+          "carrier": "TW",
+          "flightNumber": "TW243",
+          "depAirport": "ICN",
+          "depTime": "202609051020",
+          "arrAirport": "NRT",
+          "arrTime": "202609051255",
+          "stopCities": "",
+          "duration": 155,
+          "codeShare": false,
+          "cabin": "D",
+          "cabinClass": 1,
+          "seatCount": 7,
+          "aircraftCode": "738",
+          "depTerminal": "",
+          "arrTerminal": "",
+          "operatingCarrier": "",
+          "operatingFlightnumber": "",
+          "fareFamily": "Event Fare"
+        }
+      ],
+      "retSegments": [],
+      "combineIndexs": [],
+      "rule": {
+        "hasBaggage": 1,
+        "baggageElements": [
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 0,
+            "baggagePiece": 0,
+            "baggageWeight": 0,
+            "baggageSize": "",
+            "isAllWeight": false
+          },
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 1,
+            "baggagePiece": 0,
+            "baggageWeight": 0,
+            "baggageSize": "",
+            "isAllWeight": false
+          },
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 2,
+            "baggagePiece": 0,
+            "baggageWeight": 0,
+            "baggageSize": "",
+            "isAllWeight": false
+          }
+        ],
+        "refundRules": [
+          {
+            "refundType": 0,
+            "refundStatus": "H",
+            "refundMethod": null,
+            "refundFee": 87777.46,
+            "currency": "KRW",
+            "refNoshow": "H",
+            "refNoShowCondition": 0,
+            "refNoshowFee": 87777.46,
+            "ruleDetailList": [
+              {
+                "ruleId": 85908,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 525600,
+                "endMinute": 87840,
+                "amount": 70000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 85909,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 87840,
+                "endMinute": 8640,
+                "amount": 87777.46,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 85910,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 8640,
+                "endMinute": 50,
+                "amount": 87777.46,
+                "currency": "KRW"
+              }
+            ]
+          }
+        ],
+        "changesRules": [
+          {
+            "changesType": 0,
+            "changesStatus": "H",
+            "changesFee": 87777.46,
+            "currency": "KRW",
+            "revNoshow": "H",
+            "revNoShowCondition": 0,
+            "revNoshowFee": 87777.46,
+            "ruleDetailList": [
+              {
+                "ruleId": 84354,
+                "status": "H",
+                "refundMethod": null,
+                "startMinute": 525600,
+                "endMinute": 87840,
+                "amount": 70000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 84355,
+                "status": "H",
+                "refundMethod": null,
+                "startMinute": 87840,
+                "endMinute": 6,
+                "amount": 70000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 84356,
+                "status": "H",
+                "refundMethod": null,
+                "startMinute": 8640,
+                "endMinute": 50,
+                "amount": 70000.0,
+                "currency": "KRW"
+              }
+            ]
+          }
+        ],
+        "serviceElements": [
+          {
+            "hasFreeSeat": 0,
+            "hasFreeMeal": 0
+          }
+        ]
+      },
+      "ancillaryProductElements": [
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_20KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 1,
+          "price": 54.67,
+          "currency": "USD",
+          "vendorPrice": 77033.11,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 20,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_20KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        },
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_15KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 1,
+          "price": 15.18,
+          "currency": "USD",
+          "vendorPrice": 21390.22,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 15,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_15KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        },
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_30KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 1,
+          "price": 68.8,
+          "currency": "USD",
+          "vendorPrice": 96946.92,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 30,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_30KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        }
+      ],
+      "vendorFare": null,
+      "bundleOptions": [],
+      "links": null,
+      "separateBookings": false,
+      "refreshTime": "2026-08-15T09:09:13Z",
+      "expireTime": "2026-08-15T09:36:47Z",
+      "displayFare": null,
+      "ancillarySupported": [
+        "seat",
+        "luggage"
+      ],
+      "cardChargeList": null,
+      "tags": null,
+      "riskSellout": false,
+      "residentCode": null
+    },
+    {
+      "fid": "<REDACTED>",
+      "routingIdentifier": "<REDACTED>",
+      "supportCreditTransPayment": "1",
+      "supportPaymentMethods": [
+        1,
+        3
+      ],
+      "currency": "USD",
+      "adultPrice": 35.84,
+      "adultTax": 31.75,
+      "adultDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 35.84,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 31.75,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "childPrice": 35.84,
+      "childTax": 31.75,
+      "childDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 35.84,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 31.75,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "infantPrice": 7.26,
+      "infantTax": 0.0,
+      "infantDetails": [
+        {
+          "code": "farePrice",
+          "type": "base",
+          "amount": 7.26,
+          "description": "Ticket Price Markup",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        },
+        {
+          "code": "tax",
+          "type": "tax",
+          "amount": 0.0,
+          "description": "Tax",
+          "markupDetailId": null,
+          "version": null,
+          "direction": null
+        }
+      ],
+      "childMandatorySeatingFee": null,
+      "infantAllowed": true,
+      "transactionFeePerPax": 0.0,
+      "transactionFee": 0.0,
+      "transactionFeeMode": "PER_PAX",
+      "nationalityType": 0,
+      "nationality": "",
+      "suitAge": "",
+      "PaxType": "ADT",
+      "fromSegments": [
+        {
+          "segmentIndex": 1,
+          "carrier": "7C",
+          "flightNumber": "7C1109",
+          "depAirport": "ICN",
+          "depTime": "202609051625",
+          "arrAirport": "NRT",
+          "arrTime": "202609051850",
+          "stopCities": "",
+          "duration": 145,
+          "codeShare": false,
+          "cabin": "H",
+          "cabinClass": 1,
+          "seatCount": 4,
+          "aircraftCode": "",
+          "depTerminal": "",
+          "arrTerminal": "",
+          "operatingCarrier": "",
+          "operatingFlightnumber": "",
+          "fareFamily": "FLYBAG"
+        }
+      ],
+      "retSegments": [],
+      "combineIndexs": [],
+      "rule": {
+        "hasBaggage": 1,
+        "baggageElements": [
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 0,
+            "baggagePiece": 1,
+            "baggageWeight": 15,
+            "baggageSize": "L+W+H<=158cm",
+            "isAllWeight": false
+          },
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 1,
+            "baggagePiece": 1,
+            "baggageWeight": 15,
+            "baggageSize": "L+W+H<=158cm",
+            "isAllWeight": false
+          },
+          {
+            "segmentNo": 1,
+            "baggageType": "StandardCheckInBaggage",
+            "passengerType": 2,
+            "baggagePiece": 0,
+            "baggageWeight": 0,
+            "baggageSize": "L+W+H<=158cm",
+            "isAllWeight": false
+          }
+        ],
+        "refundRules": [
+          {
+            "refundType": 0,
+            "refundStatus": "H",
+            "refundMethod": null,
+            "refundFee": 50499.3,
+            "currency": "KRW",
+            "refNoshow": "H",
+            "refNoShowCondition": 0,
+            "refNoshowFee": 50499.3,
+            "ruleDetailList": [
+              {
+                "ruleId": 57195,
+                "status": "F",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 525600,
+                "endMinute": 131040,
+                "amount": 0.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 57196,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 131040,
+                "endMinute": 87840,
+                "amount": 20000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 57197,
+                "status": "H",
+                "refundMethod": "CashBackToOriginalPayment",
+                "startMinute": 87840,
+                "endMinute": 44640,
+                "amount": 40000.0,
+                "currency": "KRW"
+              }
+            ]
+          }
+        ],
+        "changesRules": [
+          {
+            "changesType": 0,
+            "changesStatus": "H",
+            "changesFee": 40000.0,
+            "currency": "KRW",
+            "revNoshow": "T",
+            "revNoShowCondition": 0,
+            "revNoshowFee": 0.0,
+            "ruleDetailList": [
+              {
+                "ruleId": 57466,
+                "status": "H",
+                "refundMethod": null,
+                "startMinute": 525600,
+                "endMinute": 0,
+                "amount": 40000.0,
+                "currency": "KRW"
+              },
+              {
+                "ruleId": 57467,
+                "status": "T",
+                "refundMethod": null,
+                "startMinute": 0,
+                "endMinute": -525600,
+                "amount": 0.0,
+                "currency": "KRW"
+              }
+            ]
+          }
+        ],
+        "serviceElements": [
+          {
+            "hasFreeSeat": 0,
+            "hasFreeMeal": 0
+          }
+        ]
+      },
+      "ancillaryProductElements": [
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_5KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 0,
+          "price": 21.0,
+          "currency": "USD",
+          "vendorPrice": 29580.25,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 5,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_5KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        },
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_20KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 0,
+          "price": 77.5,
+          "currency": "USD",
+          "vendorPrice": 109203.53,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 20,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_20KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        },
+        {
+          "segmentIndex": 1,
+          "endSegmentIndex": null,
+          "productCode": "SCI_BAG_10KG",
+          "productName": "StandardCheckInBaggage",
+          "productType": 1,
+          "canPurchaseWithTicket": 1,
+          "canPurchasePostTicket": 0,
+          "price": 37.28,
+          "currency": "USD",
+          "vendorPrice": 52527.42,
+          "vendorCurrency": "KRW",
+          "clientTechnicalServiceFee": 0,
+          "clientTechnicalServiceFeeMode": null,
+          "auxBaggageElement": {
+            "piece": 0,
+            "weight": 10,
+            "isAllWeight": true,
+            "size": ""
+          },
+          "offerId": "<REDACTED>",
+          "maxQty": 1,
+          "minQty": 1,
+          "categoryCode": "StandardCheckInBaggage",
+          "ancillaryCode": "SCI_BAG_10KG",
+          "auxSeatElement": null,
+          "displayPrice": null,
+          "displayCurrency": null
+        }
+      ],
+      "vendorFare": {
+        "vendorAdultPrice": 50499.3,
+        "vendorAdultTax": 44743.0,
+        "vendorChildPrice": 50499.3,
+        "vendorChildTax": 44743.0,
+        "vendorInfantPrice": 10218.99,
+        "vendorInfantTax": 0.0,
+        "vendorCurrency": "KRW"
+      },
+      "bundleOptions": [],
+      "links": null,
+      "separateBookings": false,
+      "refreshTime": "2026-08-15T09:16:02Z",
+      "expireTime": "2026-08-15T09:36:47Z",
+      "displayFare": null,
+      "ancillarySupported": [
+        "seat",
+        "luggage"
+      ],
+      "cardChargeList": null,
+      "tags": null,
+      "riskSellout": false,
+      "residentCode": null
+    }
+  ],
+  "status": 0,
+  "msg": null,
+  "requestId": null,
+  "clientRequestId": null
+}

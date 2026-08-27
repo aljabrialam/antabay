@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Antabay — Journey Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E4E2DC;
+  --strip:#FAF9F7;
+  --ink:#141A21;
+  --ink-2:#4A5561;
+  --ink-3:#7C8792;
+  --rule:#C2BEB5;
+  --rule-2:#D6D2CA;
+  --hold:#B0700F;
+  --violate:#9E2B1C;
+  --confirm:#1B5A87;
+  --sim:#6B3FA0;
+  --strip-h:34px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;
+  font-size:13px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+
+/* ---------- structural label ---------- */
+.eyebrow{
+  font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+
+/* ---------- app frame ---------- */
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+
+header{
+  display:flex;align-items:baseline;gap:20px;
+  padding:12px 20px;border-bottom:2px solid var(--ink);
+  background:var(--strip);
+}
+.brand{font-size:19px;font-weight:700;letter-spacing:-.02em}
+.brand span{color:var(--ink-3);font-weight:400}
+.jid{font-size:11px;color:var(--ink-2)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+
+.pill{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 8px;border:1px solid currentColor;
+}
+.pill.live{color:var(--confirm)}
+.pill.sim{color:var(--sim)}
+
+main{display:grid;grid-template-columns:290px 1fr 320px;overflow:hidden}
+.col{overflow-y:auto;padding:16px}
+.col + .col{border-left:1px solid var(--rule)}
+
+.sec{margin-bottom:22px}
+.sec > .eyebrow{padding-bottom:6px;border-bottom:1px solid var(--rule);margin-bottom:10px}
+
+/* ---------- objective strip ---------- */
+.goal{
+  background:var(--strip);border:1px solid var(--rule);border-left:3px solid var(--ink);
+  padding:11px 12px;font-size:14px;line-height:1.4;margin-bottom:14px;
+}
+.constraint{
+  display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
+  padding:6px 0;border-bottom:1px dotted var(--rule-2);
+}
+.constraint:last-child{border-bottom:0}
+.c-val{font-size:13px;font-weight:500}
+.c-key{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.tag{
+  font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 5px;
+  border:1px solid var(--ink-3);color:var(--ink-2);
+}
+.tag.hard{border-color:var(--ink);color:var(--ink);background:var(--ink);color:var(--strip)}
+
+/* ---------- clocks: THE SIGNATURE ---------- */
+.clock{margin-bottom:11px}
+.clock-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.clock-name{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.clock-time{font-size:14px;font-weight:700}
+.bar{height:5px;background:var(--rule-2);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;display:block}
+.bar.ok i{background:var(--confirm)}
+.bar.warn i{background:var(--hold)}
+.bar.dead i{background:var(--rule)}
+.clock.spent .clock-time,.clock.spent .clock-name{color:var(--ink-3)}
+.clock-note{font-size:10px;color:var(--ink-3);margin-top:3px}
+
+/* ---------- state rack ---------- */
+.rack{border:1px solid var(--rule);background:var(--strip)}
+.rack-row{
+  display:flex;align-items:center;gap:9px;height:var(--strip-h);
+  padding:0 10px;border-bottom:1px solid var(--rule-2);
+  font-size:11px;color:var(--ink-3);
+}
+.rack-row:last-child{border-bottom:0}
+.rack-row.done{color:var(--ink-2)}
+.rack-row.now{
+  background:var(--ink);color:var(--strip);font-weight:600;
+}
+.rack-mark{width:13px;text-align:center;font-size:11px}
+.rack-row.now .rack-mark{color:var(--strip)}
+
+/* ---------- trace ---------- */
+.trace{border-top:1px solid var(--rule)}
+.ev{
+  display:grid;grid-template-columns:62px 74px 1fr;gap:10px;
+  padding:5px 0;border-bottom:1px solid var(--rule-2);font-size:12px;
+}
+.ev-t{color:var(--ink-3);font-size:11px}
+.ev-k{font-size:9px;font-weight:700;letter-spacing:.08em;padding-top:2px}
+.k-tool{color:var(--confirm)}
+.k-reason{color:var(--ink-2)}
+.k-reject{color:var(--violate)}
+.k-select{color:var(--ink)}
+.k-policy{color:var(--hold)}
+.k-event{color:var(--sim)}
+.k-state{color:var(--ink-3)}
+.ev-b strong{font-weight:600}
+.ev-sub{color:var(--ink-2);font-size:11px;display:block;margin-top:1px}
+.ev.hero{background:var(--strip);margin:0 -6px;padding:8px 6px;border-left:3px solid var(--violate)}
+.ev.hero .ev-b{font-size:12.5px}
+.rule-cite{
+  display:inline-block;font-size:9px;letter-spacing:.06em;
+  border:1px solid var(--rule);padding:1px 4px;color:var(--ink-3);margin-left:5px;
+}
+
+/* ---------- authority gate ---------- */
+.gate{
+  border:2px solid var(--hold);background:var(--strip);
+  padding:13px;margin-bottom:20px;
+}
+.gate-hd{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.gate-hd .eyebrow{color:var(--hold)}
+.blink{width:7px;height:7px;background:var(--hold);border-radius:50%;animation:b 1.1s steps(2,end) infinite}
+@keyframes b{50%{opacity:.2}}
+.gate-line{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted var(--rule-2);font-size:12px}
+.gate-line b{font-weight:600}
+.delta{color:var(--hold);font-weight:700}
+.gate-why{font-size:11px;color:var(--ink-2);margin:9px 0;line-height:1.5}
+.gate-why em{font-style:normal;color:var(--ink);font-weight:600}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}
+button{
+  font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.02em;
+  padding:9px;border:1px solid var(--ink);cursor:pointer;background:var(--strip);color:var(--ink);
+}
+button.go{background:var(--ink);color:var(--strip)}
+button:focus-visible{outline:2px solid var(--hold);outline-offset:2px}
+
+/* ---------- budget ---------- */
+.budget{display:flex;gap:3px;margin-top:5px}
+.budget i{flex:1;height:14px;border:1px solid var(--rule)}
+.budget i.used{background:var(--ink);border-color:var(--ink)}
+
+/* ---------- traveller phone ---------- */
+.phone-wrap{margin-top:8px}
+.phone{
+  width:100%;max-width:250px;margin:0 auto;background:var(--ink);
+  border-radius:22px;padding:9px;
+}
+.screen{background:var(--strip);border-radius:14px;padding:14px 13px;min-height:340px}
+.ph-brand{font-size:12px;font-weight:700;letter-spacing:-.01em;margin-bottom:2px}
+.ph-status{
+  font-size:15px;font-weight:600;line-height:1.3;margin:12px 0 4px;color:var(--violate);
+}
+.ph-sub{font-size:11px;color:var(--ink-2);line-height:1.45}
+.ph-card{border:1px solid var(--rule);padding:10px;margin:13px 0;background:#fff}
+.ph-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0}
+.ph-row b{font-weight:600}
+.ph-big{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:3px 0}
+.ph-btns{display:grid;gap:6px;margin-top:14px}
+.ph-btns button{padding:11px;font-size:12px}
+.ph-note{font-size:10px;color:var(--ink-3);text-align:center;margin-top:9px;line-height:1.4}
+
+footer{
+  grid-column:1/-1;border-top:1px solid var(--rule);padding:7px 20px;
+  font-size:10px;color:var(--ink-3);display:flex;gap:16px;
+}
+@media(max-width:1100px){
+  main{grid-template-columns:1fr;overflow:auto}
+  .col + .col{border-left:0;border-top:1px solid var(--rule)}
+  .app{height:auto}
+}
+@media(prefers-reduced-motion:reduce){.blink{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="brand">Antabay<span> — journey console</span></div>
+  <div class="jid mono">j_8f21c4 · SEL→TYO · 2026-09-05</div>
+  <div class="hdr-right">
+    <span class="pill sim">simulated event active</span>
+    <span class="pill live">atlas sandbox</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= LEFT : OBJECTIVE + STATE ================= -->
+  <div class="col">
+    <div class="sec">
+      <div class="eyebrow">Objective</div>
+      <div class="goal">“Get me to Tokyo before 10&nbsp;AM tomorrow. Under USD&nbsp;120. No overnight connections.”</div>
+
+      <div class="constraint">
+        <div><div class="c-key">Destination</div><div class="c-val mono">TYO</div></div>
+        <span class="tag hard">hard</span>
+      </div>
+      <div class="constraint">
+        <div><div class="c-key">Arrive before</div><div class="c-val mono">10:00 JST</div></div>
+        <span class="tag hard">hard</span>
+      </div>
+      <div class="constraint">
+        <div><div class="c-key">Budget</div><div class="c-val mono">USD 120.00</div></div>
+        <span class="tag hard">hard</span>
+      </div>
+      <div class="constraint">
+        <div><div class="c-key">Overnight connection</div><div class="c-val">Excluded</div></div>
+        <span class="tag hard">hard</span>
+      </div>
+      <div class="constraint">
+        <div><div class="c-key">Travellers</div><div class="c-val mono">1 adult</div></div>
+        <span class="tag hard">hard</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">Journey state</div>
+      <div class="rack">
+        <div class="rack-row done"><span class="rack-mark">✓</span> Objective confirmed</div>
+        <div class="rack-row done"><span class="rack-mark">✓</span> Options held</div>
+        <div class="rack-row done"><span class="rack-mark">✓</span> Verified</div>
+        <div class="rack-row done"><span class="rack-mark">✓</span> Ordered · TQQ0BU</div>
+        <div class="rack-row done"><span class="rack-mark">✓</span> Ticketed · S46659</div>
+        <div class="rack-row done"><span class="rack-mark">✓</span> Monitoring</div>
+        <div class="rack-row done"><span class="rack-mark">✓</span> Impact evaluated</div>
+        <div class="rack-row now"><span class="rack-mark">▶</span> Awaiting authorisation</div>
+        <div class="rack-row"><span class="rack-mark">·</span> Recovery execution</div>
+        <div class="rack-row"><span class="rack-mark">·</span> Verified &amp; monitoring</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">Atlas call budget</div>
+      <div class="budget" id="budget"></div>
+      <div class="clock-note">2 of 10 searches used · rate limit 10 QPS</div>
+    </div>
+  </div>
+
+  <!-- ================= CENTRE : TRACE ================= -->
+  <div class="col">
+    <div class="eyebrow" style="padding-bottom:6px">Agent trace</div>
+    <div class="trace">
+
+      <div class="ev"><span class="ev-t mono">09:20:18</span><span class="ev-k k-state mono">STATE</span>
+        <span class="ev-b">Journey created<span class="ev-sub">objective persisted · 5 hard constraints</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:20:22</span><span class="ev-k k-tool mono">TOOL</span>
+        <span class="ev-b"><strong>search.do</strong> · 200 · 2.9s<span class="ev-sub">30 routings · 8 carriers · 2 connecting</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:20:27</span><span class="ev-k k-reject mono">REJECT</span>
+        <span class="ev-b">TW237 · arr 09:30 · USD 141.94<span class="ev-sub">exceeds budget by 21.94</span></span></div>
+
+      <div class="ev hero"><span class="ev-t mono">09:20:27</span><span class="ev-k k-reject mono">REJECT</span>
+        <span class="ev-b">7C907 + 7C1151 · arr 09:30 · USD 98.93
+          <span class="ev-sub">arrives before deadline · within budget · <strong>rejected</strong></span>
+          <span class="ev-sub">625 min layover at PUS · 13.6 h total · departs previous evening</span>
+          <span class="ev-sub">violates: no overnight connection<span class="rule-cite">FR-007</span></span>
+        </span></div>
+
+      <div class="ev"><span class="ev-t mono">09:20:27</span><span class="ev-k k-select mono">SELECT</span>
+        <span class="ev-b"><strong>ZE605</strong> ICN→NRT · dep 07:25 · arr 09:50 · USD 90.39
+          <span class="ev-sub">nonstop · 7 seats · 10 min margin to deadline</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:20:30</span><span class="ev-k k-tool mono">TOOL</span>
+        <span class="ev-b"><strong>verify.do</strong> · 200<span class="ev-sub">isPriceChange false · session issued · offer clock → session clock</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:20:47</span><span class="ev-k k-tool mono">TOOL</span>
+        <span class="ev-b"><strong>order.do</strong> · PNR TQQ0BU<span class="ev-sub">a PNR is not a ticket · ticketing deadline 30 min</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:20:50</span><span class="ev-k k-tool mono">TOOL</span>
+        <span class="ev-b"><strong>pay.do</strong> · status 0<span class="ev-sub">payment succeeded · not evidence of ticketing</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:21:26</span><span class="ev-k k-event mono">EVENT</span>
+        <span class="ev-b">order.ticketed received<span class="ev-sub">channel is unauthenticated · treating as hint, verifying</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">09:21:28</span><span class="ev-k k-tool mono">TOOL</span>
+        <span class="ev-b"><strong>queryOrderDetails.do</strong> · ticketNos [S46659]<span class="ev-sub">confirmed → monitoring</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">12:04:02</span><span class="ev-k k-event mono">EVENT</span>
+        <span class="ev-b">schedule change · <span style="color:var(--sim);font-weight:600">SIMULATED</span>
+          <span class="ev-sub">ZE605 arrival 09:50 → 11:50 · verified against Atlas before acting</span></span></div>
+
+      <div class="ev hero" style="border-left-color:var(--violate)"><span class="ev-t mono">12:04:04</span><span class="ev-k k-reason mono">EVALUATE</span>
+        <span class="ev-b"><strong>Objective violated by 1 h 50 m</strong>
+          <span class="ev-sub">arrival 11:50 vs deadline 10:00 — the meeting is the constraint, not the flight</span></span></div>
+
+      <div class="ev"><span class="ev-t mono">12:04:10</span><span class="ev-k k-reason mono">OPTIONS</span>
+        <span class="ev-b">LJ201 arr 09:55 · +USD 6.24 · compliant
+          <span class="ev-sub">TW237 arr 09:30 · +USD 51.55 · breaches stated budget</span></span></div>
+
+      <div class="ev hero" style="border-left-color:var(--hold)"><span class="ev-t mono">12:04:11</span><span class="ev-k k-policy mono">POLICY</span>
+        <span class="ev-b"><strong>Requires authorisation</strong>
+          <span class="ev-sub">spends money<span class="rule-cite">AUTH-01</span> voids a booking<span class="rule-cite">AUTH-02</span> irreversible<span class="rule-cite">AUTH-03</span></span>
+          <span class="ev-sub">decided by rule · no model consulted</span></span></div>
+
+    </div>
+  </div>
+
+  <!-- ================= RIGHT : CLOCKS + GATE + PHONE ================= -->
+  <div class="col">
+
+    <div class="sec">
+      <div class="eyebrow">Expiry clocks</div>
+
+      <div class="clock spent">
+        <div class="clock-top"><span class="clock-name">Offer window</span><span class="clock-time mono">—</span></div>
+        <div class="bar dead"><i style="width:0%"></i></div>
+        <div class="clock-note">superseded at verify · was 7 m 43 s</div>
+      </div>
+
+      <div class="clock">
+        <div class="clock-top"><span class="clock-name">Session</span><span class="clock-time mono" id="c-session">01:12:40</span></div>
+        <div class="bar ok"><i id="b-session" style="width:61%"></i></div>
+        <div class="clock-note">issued by verify.do · ~2 h</div>
+      </div>
+
+      <div class="clock">
+        <div class="clock-top"><span class="clock-name">Ticketing deadline</span><span class="clock-time mono" id="c-tkt">00:04:18</span></div>
+        <div class="bar warn"><i id="b-tkt" style="width:14%"></i></div>
+        <div class="clock-note">recovery order must be paid within</div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <div class="gate-hd"><span class="blink"></span><span class="eyebrow">Authorisation required</span></div>
+      <div class="gate-line"><span>Rebook</span><b class="mono">LJ201 · arr 09:55</b></div>
+      <div class="gate-line"><span>Additional cost</span><b class="delta mono">+USD 6.24</b></div>
+      <div class="gate-line"><span>New total</span><b class="mono">USD 96.63</b></div>
+      <div class="gate-line"><span>Objective</span><b style="color:var(--confirm)">Preserved</b></div>
+      <div class="gate-why">Arrives <em>09:55</em>, five minutes inside your deadline. Nonstop, nine seats. The original booking is voided only after the replacement is confirmed.</div>
+      <div class="btns">
+        <button class="go">Approve</button>
+        <button>Decline</button>
+      </div>
+      <div class="clock-note" style="margin-top:8px">No response is recorded as a refusal. Nothing is spent.</div>
+    </div>
+
+    <div class="sec phone-wrap">
+      <div class="eyebrow" style="padding-bottom:6px;border-bottom:1px solid var(--rule);margin-bottom:10px">Traveller view</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="ph-brand">Antabay</div>
+          <div class="eyebrow" style="font-size:9px">Seoul → Tokyo · 5 Sep</div>
+
+          <div class="ph-status">Your 10:00 meeting is at risk.</div>
+          <div class="ph-sub">ZE605 is now arriving 11:50. I found a flight that still makes it.</div>
+
+          <div class="ph-card">
+            <div class="ph-row"><span>LJ201</span><b class="mono">ICN → NRT</b></div>
+            <div class="ph-row"><span>Arrives</span><b class="mono">09:55</b></div>
+            <div class="ph-row" style="border-top:1px solid var(--rule-2);margin-top:5px;padding-top:7px"><span>Extra cost</span></div>
+            <div class="ph-big mono">+$6.24</div>
+          </div>
+
+          <div class="ph-btns">
+            <button class="go">Approve $6.24</button>
+            <button>Not now</button>
+          </div>
+          <div class="ph-note">Nothing is charged until you approve.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Atlas sandbox — test transactions, not real bookings</span>
+    <span>Reasoning: Qwen via Model Studio, Singapore</span>
+    <span>Disruption event simulated and labelled</span>
+  </footer>
+
+</main>
+</div>
+
+<script>
+// call budget: 2 of 10 used
+const b = document.getElementById('budget');
+for (let i = 0; i < 10; i++) {
+  const s = document.createElement('i');
+  if (i < 2) s.className = 'used';
+  b.appendChild(s);
+}
+
+// live-ticking clocks — the signature element
+function tick(id, barId, secs, total) {
+  let s = secs;
+  const el = document.getElementById(id), bar = document.getElementById(barId);
+  setInterval(() => {
+    if (s <= 0) return;
+    s--;
+    const h = String(Math.floor(s / 3600)).padStart(2, '0');
+    const m = String(Math.floor(s % 3600 / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    el.textContent = `${h}:${m}:${sec}`;
+    bar.style.width = (s / total * 100).toFixed(1) + '%';
+  }, 1000);
+}
+tick('c-session', 'b-session', 4360, 7200);
+tick('c-tkt', 'b-tkt', 258, 1800);
+</script>
+</body>
+</html>

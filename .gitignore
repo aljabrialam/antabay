@@ -1,0 +1,8 @@
+.env
+.env.*
+report*.html
+events/
+__pycache__/
+node_modules/
+*.pyc
+.DS_Store

@@ -1,0 +1,53 @@
+{
+  "received_at": "2026-08-15T10:04:11.156929+00:00",
+  "method": "POST",
+  "path": "/atlas",
+  "headers": {
+    "Host": "brick-beautiful-headlines-structures.trycloudflare.com",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool",
+    "Content-Length": "379",
+    "Accept": "text/html,application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Encoding": "gzip",
+    "Accept-Language": "zh-CN,zh;q=0.8",
+    "Cache-Control": "no-cache",
+    "Cdn-Loop": "cloudflare; loops=1; subreqs=1",
+    "Cf-Connecting-Ip": "8.222.188.45",
+    "Cf-Ew-Via": "15",
+    "Cf-Ipcountry": "SG",
+    "Cf-Ray": "a2b75fa8cc59fd89-SIN",
+    "Cf-Visitor": "{\"scheme\":\"https\"}",
+    "Cf-Warp-Tag-Id": "e3bb2630-1b97-4c6d-b7b3-9510e10d94e0",
+    "Cf-Worker": "trycloudflare.com",
+    "Connection": "keep-alive",
+    "Content-Type": "application/json;charset=UTF-8",
+    "Pragma": "no-cache",
+    "X-Forwarded-For": "8.222.188.45",
+    "X-Forwarded-Proto": "https"
+  },
+  "raw_body": "{\"cid\":\"ZVM98377_api_1\",\"data\":{\"orderNo\":\"TESTA20260815180326173\",\"orderStatus\":2,\"paxTicketInfos\":[{\"airlinePNRs\":[\"S46659\"],\"ancillaries\":[],\"birthday\":\"19900101\",\"cardExpired\":\"20301231\",\"cardIssuePlace\":\"\",\"cardNum\":\"A12345678\",\"cardType\":\"PP\",\"gender\":\"M\",\"name\":\"TEST/ONE\",\"nationality\":\"ID\",\"passengerType\":0,\"ticketNos\":[\"S46659\"]}]},\"status\":-1,\"type\":\"order.ticketed\"}",
+  "json_body": {
+    "cid": "<REDACTED>",
+    "data": {
+      "orderNo": "<REDACTED>",
+      "orderStatus": 2,
+      "paxTicketInfos": [
+        {
+          "airlinePNRs": "<REDACTED>",
+          "ancillaries": [],
+          "birthday": "<REDACTED>",
+          "cardExpired": "<REDACTED>",
+          "cardIssuePlace": "",
+          "cardNum": "<REDACTED>",
+          "cardType": "PP",
+          "gender": "M",
+          "name": "<REDACTED>",
+          "nationality": "ID",
+          "passengerType": 0,
+          "ticketNos": "<REDACTED>"
+        }
+      ]
+    },
+    "status": -1,
+    "type": "order.ticketed"
+  }
+}
