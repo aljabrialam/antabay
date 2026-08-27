@@ -14,14 +14,27 @@ from journey.models.objective import (
     ParseResult,
     TravelObjective,
 )
+from journey.models.scoring import (
+    ConnectionEvaluation,
+    EliminationRecord,
+    NoSatisfyingOptionReport,
+    Rationale,
+    RejectionReason,
+    ScoredOption,
+    ScoringOutcome,
+    ScoringRun,
+)
 from journey.services.journey_service import JourneyService
 from journey.services.objective_parser import ObjectiveParser
+from journey.services.scoring_service import ScoringService
 from journey.services.state_service import IdentifierNotFoundError, JourneyStateService
 
 __all__ = [
     "AuditEntry",
+    "ConnectionEvaluation",
     "ConstrainedField",
     "ConstraintType",
+    "EliminationRecord",
     "HeldIdentifier",
     "IdentifierFreshness",
     "IdentifierNotFoundError",
@@ -32,7 +45,15 @@ __all__ = [
     "JourneyState",
     "JourneyStateMachine",
     "JourneyStateService",
+    "NoSatisfyingOptionReport",
     "ObjectiveParser",
     "ParseResult",
+    "Rationale",
+    "RejectionReason",
+    "ScoredOption",
+    "ScoringOutcome",
+    "ScoringRun",
+    "ScoringService",
     "TravelObjective",
 ]
+

@@ -112,3 +112,17 @@ legs = Table(
     Column("aircraft_code", String, nullable=False),
     Column("fare_family", String, nullable=True),
 )
+
+scoring_runs = Table(
+    "scoring_runs",
+    metadata,
+    Column("run_id", String, primary_key=True),
+    Column("journey_id", String, nullable=False),
+    Column("evaluated_at", String, nullable=False),   # ISO-8601 UTC
+    Column("objective_json", Text, nullable=False),
+    Column("result_json", Text, nullable=False),      # full ScoringRun as JSON
+    Column("selected_option_id", String, nullable=True),
+    Column("option_count", Integer, nullable=False),
+    Column("eliminated_count", Integer, nullable=False),
+    Column("created_at", String, nullable=False),     # ISO-8601 UTC
+)

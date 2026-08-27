@@ -28,3 +28,11 @@ class SearchRecordNotFoundError(Exception):
     def __init__(self, search_id: str) -> None:
         super().__init__(f"SearchRecord not found: {search_id}")
         self.search_id = search_id
+
+
+class ScoringRunNotFoundError(Exception):
+    """Raised by get_scoring_run() when the requested run_id does not exist."""
+
+    def __init__(self, run_id: str) -> None:
+        super().__init__(f"ScoringRun not found: {run_id}")
+        self.run_id = run_id

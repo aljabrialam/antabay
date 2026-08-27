@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -20,6 +21,16 @@ from journey.models.objective import (
     ConstraintType,
     TravelObjective,
 )
+from journey.models.scoring import (
+    ConnectionEvaluation,
+    EliminationRecord,
+    NoSatisfyingOptionReport,
+    Rationale,
+    RejectionReason,
+    ScoredOption,
+    ScoringOutcome,
+    ScoringRun,
+)
 from journey.storage.db import get_connection
 from journey.storage.tables import (
     audit_entries,
@@ -28,6 +39,7 @@ from journey.storage.tables import (
     held_identifiers,
     journeys,
     legs,
+    scoring_runs,
     search_records,
 )
 
@@ -410,3 +422,199 @@ class JourneyRepository:
                     )
                 )
         return result
+
+    # ------------------------------------------------------------------
+    # Scoring persistence methods (003-option-scoring)
+    # ------------------------------------------------------------------
+
+    def save_scoring_run(self, run: ScoringRun, journey_id: str) -> None:
+        eliminated_count = sum(
+            1 for so in run.scored_options
+            if so.outcome == ScoringOutcome.ELIMINATED
+        )
+        result_json = _scoring_run_to_json(run)
+        now_iso = datetime.now(tz=timezone.utc).isoformat()
+        with get_connection() as conn:
+            conn.execute(
+                insert(scoring_runs).values(
+                    run_id=run.run_id,
+                    journey_id=journey_id,
+                    evaluated_at=run.evaluated_at.isoformat(),
+                    objective_json=run.objective.model_dump_json(),
+                    result_json=result_json,
+                    selected_option_id=(
+                        run.selected_option.option.option_id
+                        if run.selected_option else None
+                    ),
+                    option_count=len(run.scored_options),
+                    eliminated_count=eliminated_count,
+                    created_at=now_iso,
+                )
+            )
+            conn.commit()
+
+    def get_scoring_run(self, run_id: str) -> ScoringRun:
+        from journey.errors import ScoringRunNotFoundError
+
+        with get_connection() as conn:
+            row = conn.execute(
+                select(scoring_runs).where(scoring_runs.c.run_id == run_id)
+            ).mappings().first()
+        if row is None:
+            raise ScoringRunNotFoundError(run_id)
+        return _scoring_run_from_json(row["result_json"])
+
+
+# ---------------------------------------------------------------------------
+# ScoringRun JSON serialization helpers
+# ---------------------------------------------------------------------------
+
+def _leg_to_dict(leg: Leg) -> dict:
+    return {
+        "leg_id": leg.leg_id, "option_id": leg.option_id,
+        "segment_index": leg.segment_index, "carrier": leg.carrier,
+        "flight_number": leg.flight_number, "dep_airport": leg.dep_airport,
+        "dep_time": leg.dep_time, "arr_airport": leg.arr_airport,
+        "arr_time": leg.arr_time, "duration_minutes": leg.duration_minutes,
+        "stop_cities": leg.stop_cities, "cabin_class": leg.cabin_class,
+        "seat_count": leg.seat_count, "risk_sellout": leg.risk_sellout,
+        "code_share": leg.code_share, "aircraft_code": leg.aircraft_code,
+        "fare_family": leg.fare_family,
+    }
+
+
+def _option_to_dict(opt: FlightOption) -> dict:
+    return {
+        "option_id": opt.option_id, "journey_id": opt.journey_id,
+        "search_record_id": opt.search_record_id, "fid": opt.fid,
+        "routing_identifier": opt.routing_identifier, "currency": opt.currency,
+        "adult_price": str(opt.adult_price), "adult_tax": str(opt.adult_tax),
+        "transaction_fee": str(opt.transaction_fee),
+        "refreshed_at": opt.refreshed_at.isoformat() if opt.refreshed_at else None,
+        "expire_at": opt.expire_at.isoformat() if opt.expire_at else None,
+        "is_multi_leg": opt.is_multi_leg, "separate_bookings": opt.separate_bookings,
+        "legs": [_leg_to_dict(l) for l in opt.legs],
+        "recorded_at": opt.recorded_at.isoformat(),
+    }
+
+
+def _option_from_dict(d: dict) -> FlightOption:
+    return FlightOption(
+        option_id=d["option_id"], journey_id=d["journey_id"],
+        search_record_id=d["search_record_id"], fid=d["fid"],
+        routing_identifier=d["routing_identifier"], currency=d["currency"],
+        adult_price=Decimal(d["adult_price"]), adult_tax=Decimal(d["adult_tax"]),
+        transaction_fee=Decimal(d["transaction_fee"]),
+        refreshed_at=datetime.fromisoformat(d["refreshed_at"]) if d["refreshed_at"] else None,
+        expire_at=datetime.fromisoformat(d["expire_at"]) if d["expire_at"] else None,
+        is_multi_leg=d["is_multi_leg"], separate_bookings=d["separate_bookings"],
+        legs=[Leg(**{k: v for k, v in ld.items()}) for ld in d["legs"]],
+        recorded_at=datetime.fromisoformat(d["recorded_at"]),
+    )
+
+
+def _elim_to_dict(e: EliminationRecord | None) -> dict | None:
+    if e is None:
+        return None
+    return {"option_id": e.option_id, "reason_code": e.reason_code,
+            "reason_detail": e.reason_detail, "constraint_id": e.constraint_id}
+
+
+def _rationale_to_dict(r: Rationale | None) -> dict | None:
+    if r is None:
+        return None
+    return {"option_id": r.option_id, "objective_elements": r.objective_elements,
+            "summary": r.summary, "arrival_margin_minutes": r.arrival_margin_minutes,
+            "total_cost": str(r.total_cost) if r.total_cost is not None else None}
+
+
+def _rejection_to_dict(r: RejectionReason | None) -> dict | None:
+    if r is None:
+        return None
+    return {"option_id": r.option_id, "reason_code": r.reason_code,
+            "reason_detail": r.reason_detail}
+
+
+def _conn_eval_to_dict(c: ConnectionEvaluation | None) -> dict | None:
+    if c is None:
+        return None
+    return {"option_id": c.option_id, "connection_times": c.connection_times,
+            "connection_excluded": c.connection_excluded,
+            "exclusion_rule": c.exclusion_rule,
+            "impossible_connections": c.impossible_connections}
+
+
+def _scored_option_to_dict(so: ScoredOption) -> dict:
+    return {
+        "option": _option_to_dict(so.option),
+        "outcome": so.outcome.value,
+        "rank": so.rank,
+        "rationale": _rationale_to_dict(so.rationale),
+        "elimination": _elim_to_dict(so.elimination),
+        "rejection_reason": _rejection_to_dict(so.rejection_reason),
+        "connection_eval": _conn_eval_to_dict(so.connection_eval),
+    }
+
+
+def _scored_option_from_dict(d: dict) -> ScoredOption:
+    elim_d = d["elimination"]
+    rat_d = d["rationale"]
+    rej_d = d["rejection_reason"]
+    ce_d = d["connection_eval"]
+    return ScoredOption(
+        option=_option_from_dict(d["option"]),
+        outcome=ScoringOutcome(d["outcome"]),
+        rank=d["rank"],
+        rationale=Rationale(
+            option_id=rat_d["option_id"],
+            objective_elements=rat_d["objective_elements"],
+            summary=rat_d["summary"],
+            arrival_margin_minutes=rat_d["arrival_margin_minutes"],
+            total_cost=Decimal(rat_d["total_cost"]) if rat_d["total_cost"] is not None else None,
+        ) if rat_d else None,
+        elimination=EliminationRecord(**elim_d) if elim_d else None,
+        rejection_reason=RejectionReason(**rej_d) if rej_d else None,
+        connection_eval=ConnectionEvaluation(**ce_d) if ce_d else None,
+    )
+
+
+def _no_sat_to_dict(n: NoSatisfyingOptionReport | None) -> dict | None:
+    if n is None:
+        return None
+    return {"unsatisfied_constraints": n.unsatisfied_constraints,
+            "eliminated_count": n.eliminated_count, "summary": n.summary}
+
+
+def _scoring_run_to_json(run: ScoringRun) -> str:
+    selected_idx: int | None = None
+    scored_dicts = [_scored_option_to_dict(so) for so in run.scored_options]
+    if run.selected_option is not None:
+        for i, so in enumerate(run.scored_options):
+            if so is run.selected_option:
+                selected_idx = i
+                break
+
+    return json.dumps({
+        "run_id": run.run_id,
+        "objective": run.objective.model_dump(mode="json"),
+        "evaluated_at": run.evaluated_at.isoformat(),
+        "scored_options": scored_dicts,
+        "selected_option_index": selected_idx,
+        "no_satisfying_option": _no_sat_to_dict(run.no_satisfying_option),
+    })
+
+
+def _scoring_run_from_json(raw: str) -> ScoringRun:
+    d = json.loads(raw)
+    scored = [_scored_option_from_dict(sd) for sd in d["scored_options"]]
+    idx = d["selected_option_index"]
+    selected = scored[idx] if idx is not None else None
+    no_sat_d = d["no_satisfying_option"]
+    return ScoringRun(
+        run_id=d["run_id"],
+        objective=TravelObjective.model_validate(d["objective"]),
+        evaluated_at=datetime.fromisoformat(d["evaluated_at"]),
+        scored_options=scored,
+        selected_option=selected,
+        no_satisfying_option=NoSatisfyingOptionReport(**no_sat_d) if no_sat_d else None,
+    )
