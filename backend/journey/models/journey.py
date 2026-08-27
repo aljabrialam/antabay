@@ -88,6 +88,7 @@ class JourneyRecord:
     schema_version: int = 1
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
+    call_budget: int = 20
     audit_entries: list[AuditEntry] = field(default_factory=list)
     held_identifiers: list[HeldIdentifier] = field(default_factory=list)
     authorisation_outcomes: list[AuthorisationOutcome] = field(default_factory=list)

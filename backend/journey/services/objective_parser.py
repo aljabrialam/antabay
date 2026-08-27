@@ -19,6 +19,7 @@ _OBJECTIVE_FIELDS = [
     "origin",
     "destination",
     "latest_arrival",
+    "departure_date",
     "budget_amount",
     "budget_currency",
     "pax_count",
@@ -62,6 +63,15 @@ def _build_tool_schema() -> dict[str, Any]:
                     },
                     "latest_arrival": {
                         "type": "object",
+                        "properties": {
+                            "value": {"type": "string"},
+                            "constraint_type": {"type": "string", "enum": ["HARD", "SOFT"]},
+                        },
+                        "required": ["value", "constraint_type"],
+                    },
+                    "departure_date": {
+                        "type": "object",
+                        "description": "Departure date in YYYYMMDD format (e.g. 20260905).",
                         "properties": {
                             "value": {"type": "string"},
                             "constraint_type": {"type": "string", "enum": ["HARD", "SOFT"]},

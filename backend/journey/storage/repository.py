@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.engine import Connection
 
+from journey.models.flight import FlightOption, Leg, SearchOutcome, SearchRecord
 from journey.models.journey import (
     AuditEntry,
     AuthorisationOutcome,
@@ -22,8 +24,11 @@ from journey.storage.db import get_connection
 from journey.storage.tables import (
     audit_entries,
     authorisation_outcomes,
+    flight_options,
     held_identifiers,
     journeys,
+    legs,
+    search_records,
 )
 
 
@@ -36,6 +41,7 @@ class JourneyRepository:
                     state=record.state.value,
                     objective_json=record.objective.model_dump_json(),
                     schema_version=record.schema_version,
+                    call_budget=record.call_budget,
                     created_at=record.created_at.isoformat(),
                     updated_at=record.updated_at.isoformat(),
                 )
@@ -113,6 +119,7 @@ class JourneyRepository:
                 state=JourneyState(row["state"]),
                 objective=objective,
                 schema_version=row["schema_version"],
+                call_budget=row["call_budget"] if row["call_budget"] is not None else 20,
                 created_at=datetime.fromisoformat(row["created_at"]),
                 updated_at=datetime.fromisoformat(row["updated_at"]),
                 audit_entries=entries,
@@ -221,3 +228,185 @@ class JourneyRepository:
             stale_after_seconds=stale_after_seconds,
             stale_at=stale_at,
         )
+
+    # ------------------------------------------------------------------
+    # Flight search methods
+    # ------------------------------------------------------------------
+
+    def decrement_call_budget(self, journey_id: str) -> tuple[int, int]:
+        """Atomically decrement call_budget; return (budget_before, budget_after).
+
+        Raises BudgetExhaustedError if budget is already 0.
+        """
+        from journey.errors import BudgetExhaustedError
+
+        with get_connection() as conn:
+            row = conn.execute(
+                select(journeys.c.call_budget).where(journeys.c.journey_id == journey_id)
+            ).scalar()
+            if row is None:
+                raise ValueError(f"Journey not found: {journey_id}")
+            budget_before: int = row
+            if budget_before <= 0:
+                raise BudgetExhaustedError(f"call_budget exhausted for journey {journey_id}")
+            budget_after = budget_before - 1
+            conn.execute(
+                update(journeys)
+                .where(journeys.c.journey_id == journey_id)
+                .values(call_budget=budget_after)
+            )
+            conn.commit()
+        return budget_before, budget_after
+
+    def save_search_record(self, record: SearchRecord) -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(search_records).values(
+                    search_id=record.search_id,
+                    journey_id=record.journey_id,
+                    requested_at=record.requested_at.isoformat(),
+                    responded_at=record.responded_at.isoformat(),
+                    raw_response_json=record.raw_response_json,
+                    status_code=record.status_code,
+                    atlas_status=record.atlas_status,
+                    option_count=record.option_count,
+                    budget_before=record.budget_before,
+                    budget_after=record.budget_after,
+                    outcome=record.outcome.value,
+                )
+            )
+            conn.commit()
+
+    def get_search_record(self, search_id: str) -> SearchRecord | None:
+        with get_connection() as conn:
+            row = conn.execute(
+                select(search_records).where(search_records.c.search_id == search_id)
+            ).mappings().first()
+        if row is None:
+            return None
+        return SearchRecord(
+            search_id=row["search_id"],
+            journey_id=row["journey_id"],
+            requested_at=datetime.fromisoformat(row["requested_at"]),
+            responded_at=datetime.fromisoformat(row["responded_at"]),
+            raw_response_json=row["raw_response_json"],
+            status_code=row["status_code"],
+            atlas_status=row["atlas_status"],
+            option_count=row["option_count"],
+            budget_before=row["budget_before"],
+            budget_after=row["budget_after"],
+            outcome=SearchOutcome(row["outcome"]),
+        )
+
+    def save_flight_options(self, options: list[FlightOption]) -> None:
+        """Persist FlightOption and their Legs rows in a single transaction (Tx2)."""
+        with get_connection() as conn:
+            for opt in options:
+                conn.execute(
+                    insert(flight_options).values(
+                        option_id=opt.option_id,
+                        journey_id=opt.journey_id,
+                        search_record_id=opt.search_record_id,
+                        fid=opt.fid,
+                        routing_identifier=opt.routing_identifier,
+                        currency=opt.currency,
+                        adult_price=str(opt.adult_price),
+                        adult_tax=str(opt.adult_tax),
+                        transaction_fee=str(opt.transaction_fee),
+                        refreshed_at=opt.refreshed_at.isoformat() if opt.refreshed_at else None,
+                        expire_at=opt.expire_at.isoformat() if opt.expire_at else None,
+                        is_multi_leg=1 if opt.is_multi_leg else 0,
+                        separate_bookings=1 if opt.separate_bookings else 0,
+                        recorded_at=opt.recorded_at.isoformat(),
+                    )
+                )
+                for leg in opt.legs:
+                    conn.execute(
+                        insert(legs).values(
+                            leg_id=leg.leg_id,
+                            option_id=leg.option_id,
+                            segment_index=leg.segment_index,
+                            carrier=leg.carrier,
+                            flight_number=leg.flight_number,
+                            dep_airport=leg.dep_airport,
+                            dep_time=leg.dep_time,
+                            arr_airport=leg.arr_airport,
+                            arr_time=leg.arr_time,
+                            duration_minutes=leg.duration_minutes,
+                            stop_cities=leg.stop_cities,
+                            cabin_class=leg.cabin_class,
+                            seat_count=leg.seat_count,
+                            risk_sellout=1 if leg.risk_sellout else 0,
+                            code_share=1 if leg.code_share else 0,
+                            aircraft_code=leg.aircraft_code,
+                            fare_family=leg.fare_family,
+                        )
+                    )
+            conn.commit()
+
+    def get_options(self, search_id: str) -> list[FlightOption]:
+        """Return FlightOption list for search_id; raises SearchRecordNotFoundError if unknown."""
+        from journey.errors import SearchRecordNotFoundError
+
+        with get_connection() as conn:
+            exists = conn.execute(
+                select(search_records.c.search_id).where(search_records.c.search_id == search_id)
+            ).scalar()
+            if exists is None:
+                raise SearchRecordNotFoundError(search_id)
+
+            opt_rows = conn.execute(
+                select(flight_options).where(flight_options.c.search_record_id == search_id)
+            ).mappings().all()
+
+            result = []
+            for row in opt_rows:
+                leg_rows = conn.execute(
+                    select(legs)
+                    .where(legs.c.option_id == row["option_id"])
+                    .order_by(legs.c.segment_index)
+                ).mappings().all()
+
+                leg_list = [
+                    Leg(
+                        leg_id=lr["leg_id"],
+                        option_id=lr["option_id"],
+                        segment_index=lr["segment_index"],
+                        carrier=lr["carrier"],
+                        flight_number=lr["flight_number"],
+                        dep_airport=lr["dep_airport"],
+                        dep_time=lr["dep_time"],
+                        arr_airport=lr["arr_airport"],
+                        arr_time=lr["arr_time"],
+                        duration_minutes=lr["duration_minutes"],
+                        stop_cities=lr["stop_cities"],
+                        cabin_class=lr["cabin_class"],
+                        seat_count=lr["seat_count"],
+                        risk_sellout=bool(lr["risk_sellout"]),
+                        code_share=bool(lr["code_share"]),
+                        aircraft_code=lr["aircraft_code"],
+                        fare_family=lr["fare_family"],
+                    )
+                    for lr in leg_rows
+                ]
+
+                result.append(
+                    FlightOption(
+                        option_id=row["option_id"],
+                        journey_id=row["journey_id"],
+                        search_record_id=row["search_record_id"],
+                        fid=row["fid"],
+                        routing_identifier=row["routing_identifier"],
+                        currency=row["currency"],
+                        adult_price=Decimal(row["adult_price"]),
+                        adult_tax=Decimal(row["adult_tax"]),
+                        transaction_fee=Decimal(row["transaction_fee"]),
+                        refreshed_at=datetime.fromisoformat(row["refreshed_at"]) if row["refreshed_at"] else None,
+                        expire_at=datetime.fromisoformat(row["expire_at"]) if row["expire_at"] else None,
+                        is_multi_leg=bool(row["is_multi_leg"]),
+                        separate_bookings=bool(row["separate_bookings"]),
+                        legs=leg_list,
+                        recorded_at=datetime.fromisoformat(row["recorded_at"]),
+                    )
+                )
+        return result

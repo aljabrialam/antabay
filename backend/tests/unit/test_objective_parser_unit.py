@@ -79,8 +79,8 @@ class TestObjectiveParserReturnsParseResult:
             return_value=response,
         ):
             result = parser.parse("I want to travel")
-        # All 7 fields absent — none should be defaulted
-        assert len(result.absent_fields) == 7
+        # All 8 fields absent — none should be defaulted
+        assert len(result.absent_fields) == 8
         assert result.objective.origin is None
         assert result.objective.destination is None
 

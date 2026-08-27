@@ -26,6 +26,7 @@ class TravelObjective(BaseModel):
     origin: ConstrainedField[str] | None = None
     destination: ConstrainedField[str] | None = None
     latest_arrival: ConstrainedField[str] | None = None
+    departure_date: ConstrainedField[str] | None = None
     budget_amount: ConstrainedField[Decimal] | None = None
     budget_currency: ConstrainedField[str] | None = None
     pax_count: ConstrainedField[int] | None = None
