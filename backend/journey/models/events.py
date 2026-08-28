@@ -31,6 +31,10 @@ class EventType(str, Enum):
     ALTERNATIVE_RECOMMENDED = "alternative_recommended"
     NO_ALTERNATIVE_FOUND = "no_alternative_found"
     IMPACT_EVALUATION_SUPERSEDED = "impact_evaluation_superseded"
+    RECOVERY_EXECUTION_ABANDONED = "recovery_execution_abandoned"
+    REPLACEMENT_SECURED = "replacement_secured"
+    CANCELLATION_OUTCOME_RECORDED = "cancellation_outcome_recorded"
+    RECOVERY_EXECUTION_COMPLETED = "recovery_execution_completed"
 
 
 class ObjectiveConstraint(BaseModel):
@@ -145,6 +149,33 @@ class ImpactEvaluationSupersededPayload(BaseModel):
     superseded_by_event_id: str
 
 
+class RecoveryExecutionAbandonedPayload(BaseModel):
+    recovery_execution_id: str
+    recommendation_id: str
+    abandonment_reason: str
+
+
+class ReplacementSecuredPayload(BaseModel):
+    recovery_execution_id: str
+    recommendation_id: str
+    replacement_order_no: str
+    superseded_order_no: str | None = None
+
+
+class CancellationOutcomeRecordedPayload(BaseModel):
+    recovery_execution_id: str
+    order_no: str
+    outcome: Literal["SUCCEEDED", "FAILED", "NOT_ATTEMPTED"]
+
+
+class RecoveryExecutionCompletedPayload(BaseModel):
+    recovery_execution_id: str
+    recommendation_id: str
+    replacement_outcome: str | None = None
+    cancellation_outcome: str | None = None
+    final_position_description: str
+
+
 _PAYLOAD_MODELS: dict[EventType, type[BaseModel]] = {
     EventType.EXTERNAL_CALL: ExternalCallPayload,
     EventType.DECISION: DecisionPayload,
@@ -165,6 +196,10 @@ _PAYLOAD_MODELS: dict[EventType, type[BaseModel]] = {
     EventType.ALTERNATIVE_RECOMMENDED: AlternativeRecommendedPayload,
     EventType.NO_ALTERNATIVE_FOUND: NoAlternativeFoundPayload,
     EventType.IMPACT_EVALUATION_SUPERSEDED: ImpactEvaluationSupersededPayload,
+    EventType.RECOVERY_EXECUTION_ABANDONED: RecoveryExecutionAbandonedPayload,
+    EventType.REPLACEMENT_SECURED: ReplacementSecuredPayload,
+    EventType.CANCELLATION_OUTCOME_RECORDED: CancellationOutcomeRecordedPayload,
+    EventType.RECOVERY_EXECUTION_COMPLETED: RecoveryExecutionCompletedPayload,
 }
 
 

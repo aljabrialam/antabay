@@ -37,6 +37,7 @@ from journey.storage.db import get_connection
 from journey.storage.tables import (
     audit_entries,
     authorisation_outcomes,
+    cancellation_attempts,
     flight_options,
     held_identifiers,
     impact_evaluations,
@@ -46,6 +47,7 @@ from journey.storage.tables import (
     orders,
     payments,
     recommendations,
+    recovery_executions,
     scoring_runs,
     search_records,
     ticketing_queries,
@@ -57,6 +59,7 @@ from journey.storage.tables import (
 if TYPE_CHECKING:
     from journey.models.booking import Order, PaymentAttempt, TicketingQuery
     from journey.models.impact_evaluation import ImpactEvaluation, Recommendation
+    from journey.models.recovery_execution import CancellationAttempt, RecoveryExecution
     from journey.models.verification import VerificationResult
     from journey.models.verification_gate import VerificationAttempt
     from journey.models.webhook import InboundNotification
@@ -1145,6 +1148,119 @@ class JourneyRepository:
             constraint_breach=bool(row["constraint_breach"]),
             constraint_breach_detail=row["constraint_breach_detail"],
         )
+
+    # ------------------------------------------------------------------
+    # Recovery execution persistence (011-recovery-execution)
+    # ------------------------------------------------------------------
+
+    def save_recovery_execution(self, execution: "RecoveryExecution") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(recovery_executions).values(**_recovery_execution_values(execution))
+            )
+            conn.commit()
+
+    def update_recovery_execution(self, execution: "RecoveryExecution") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                update(recovery_executions)
+                .where(recovery_executions.c.recovery_execution_id == execution.recovery_execution_id)
+                .values(**_recovery_execution_values(execution))
+            )
+            conn.commit()
+
+    def get_recovery_execution_by_recommendation(
+        self, recommendation_id: str
+    ) -> "RecoveryExecution | None":
+        with get_connection() as conn:
+            row = conn.execute(
+                select(recovery_executions).where(
+                    recovery_executions.c.recommendation_id == recommendation_id
+                )
+            ).mappings().first()
+        return _row_to_recovery_execution(row) if row is not None else None
+
+    def save_cancellation_attempt(self, attempt: "CancellationAttempt") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(cancellation_attempts).values(
+                    attempt_id=attempt.attempt_id,
+                    journey_id=attempt.journey_id,
+                    order_no=attempt.order_no,
+                    requested_at=attempt.requested_at.isoformat(),
+                    responded_at=attempt.responded_at.isoformat() if attempt.responded_at else None,
+                    raw_response_json=attempt.raw_response_json,
+                    outcome=attempt.outcome,
+                    reconciliation_raw_json=attempt.reconciliation_raw_json,
+                    confirmed_cancelled=1 if attempt.confirmed_cancelled else 0,
+                )
+            )
+            conn.commit()
+
+    def set_current_order(self, journey_id: str, order_no: str) -> None:
+        with get_connection() as conn:
+            conn.execute(
+                update(journeys)
+                .where(journeys.c.journey_id == journey_id)
+                .values(current_order_no=order_no)
+            )
+            conn.commit()
+
+    def get_current_order_no(self, journey_id: str) -> str | None:
+        with get_connection() as conn:
+            return conn.execute(
+                select(journeys.c.current_order_no).where(journeys.c.journey_id == journey_id)
+            ).scalar()
+
+
+# ---------------------------------------------------------------------------
+# RecoveryExecution serialization helpers (011-recovery-execution)
+# ---------------------------------------------------------------------------
+
+def _recovery_execution_values(execution: "RecoveryExecution") -> dict[str, Any]:
+    return {
+        "recovery_execution_id": execution.recovery_execution_id,
+        "recommendation_id": execution.recommendation_id,
+        "journey_id": execution.journey_id,
+        "started_at": execution.started_at.isoformat(),
+        "concluded_at": execution.concluded_at.isoformat() if execution.concluded_at else None,
+        "status": execution.status.value,
+        "abandonment_reason": execution.abandonment_reason,
+        "superseded_order_no": execution.superseded_order_no,
+        "replacement_order_no": execution.replacement_order_no,
+        "replacement_outcome": execution.replacement_outcome.value if execution.replacement_outcome else None,
+        "cancellation_outcome": execution.cancellation_outcome.value if execution.cancellation_outcome else None,
+        "final_position_description": execution.final_position_description,
+    }
+
+
+def _row_to_recovery_execution(row: Any) -> "RecoveryExecution":
+    from journey.models.recovery_execution import (
+        CancellationOutcome,
+        RecoveryExecution,
+        RecoveryExecutionStatus,
+        ReplacementOutcome,
+    )
+
+    return RecoveryExecution(
+        recovery_execution_id=row["recovery_execution_id"],
+        recommendation_id=row["recommendation_id"],
+        journey_id=row["journey_id"],
+        started_at=datetime.fromisoformat(row["started_at"]),
+        status=RecoveryExecutionStatus(row["status"]),
+        concluded_at=datetime.fromisoformat(row["concluded_at"]) if row["concluded_at"] else None,
+        abandonment_reason=row["abandonment_reason"],
+        superseded_order_no=row["superseded_order_no"],
+        replacement_order_no=row["replacement_order_no"],
+        replacement_outcome=(
+            ReplacementOutcome(row["replacement_outcome"]) if row["replacement_outcome"] else None
+        ),
+        cancellation_outcome=(
+            CancellationOutcome(row["cancellation_outcome"]) if row["cancellation_outcome"] else None
+        ),
+        final_position_description=row["final_position_description"],
+    )
+
 
 # ---------------------------------------------------------------------------
 # ImpactEvaluation serialization helpers (009-impact-evaluation)

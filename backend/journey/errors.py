@@ -125,3 +125,22 @@ class NoOrderReferenceForJourneyError(Exception):
     def __init__(self, journey_id: str) -> None:
         super().__init__(f"No order reference found for journey {journey_id!r}")
         self.journey_id = journey_id
+
+
+class RecommendationNotFoundError(Exception):
+    """Raised when recovery execution is requested for an unknown
+    recommendation_id (spec 011, data-model.md)."""
+
+    def __init__(self, recommendation_id: str) -> None:
+        super().__init__(f"No recommendation found: {recommendation_id!r}")
+        self.recommendation_id = recommendation_id
+
+
+class RecoveryAlreadyAttemptedError(Exception):
+    """Raised when a second execution attempt is made against a
+    recommendation_id that already has a RecoveryExecution row, in any
+    status (spec 011, FR-014, research.md R5)."""
+
+    def __init__(self, recommendation_id: str) -> None:
+        super().__init__(f"Recovery already attempted for recommendation: {recommendation_id!r}")
+        self.recommendation_id = recommendation_id

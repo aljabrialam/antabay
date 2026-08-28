@@ -22,6 +22,7 @@ journeys = Table(
     Column("created_at", String, nullable=False),  # ISO-8601 UTC
     Column("updated_at", String, nullable=False),  # ISO-8601 UTC
     Column("call_budget", Integer, nullable=False, default=20),
+    Column("current_order_no", String, nullable=True),  # 011: explicit pointer, distinct from recency
 )
 
 audit_entries = Table(
@@ -264,4 +265,35 @@ recommendations = Table(
     Column("rationale", Text, nullable=False),
     Column("constraint_breach", Integer, nullable=False, default=0),  # 0/1
     Column("constraint_breach_detail", Text, nullable=True),
+)
+
+recovery_executions = Table(
+    "recovery_executions",
+    metadata,
+    Column("recovery_execution_id", String, primary_key=True),
+    Column("recommendation_id", String, nullable=False, unique=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("started_at", String, nullable=False),                # ISO-8601 UTC
+    Column("concluded_at", String, nullable=True),                # ISO-8601 UTC
+    Column("status", String, nullable=False),                     # IN_PROGRESS | COMPLETED | ABANDONED
+    Column("abandonment_reason", String, nullable=True),
+    Column("superseded_order_no", String, nullable=True),
+    Column("replacement_order_no", String, nullable=True),
+    Column("replacement_outcome", String, nullable=True),         # SUCCEEDED | FAILED
+    Column("cancellation_outcome", String, nullable=True),        # SUCCEEDED | FAILED | NOT_ATTEMPTED
+    Column("final_position_description", Text, nullable=True),
+)
+
+cancellation_attempts = Table(
+    "cancellation_attempts",
+    metadata,
+    Column("attempt_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("order_no", String, nullable=False),
+    Column("requested_at", String, nullable=False),               # ISO-8601 UTC
+    Column("responded_at", String, nullable=True),                # ISO-8601 UTC
+    Column("raw_response_json", Text, nullable=True),
+    Column("outcome", String, nullable=False),                    # INITIATED | ERROR
+    Column("reconciliation_raw_json", Text, nullable=True),
+    Column("confirmed_cancelled", Integer, nullable=False, default=0),  # 0/1
 )

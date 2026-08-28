@@ -35,6 +35,13 @@ from journey.models.scoring import (
 )
 from journey.models.booking import Order, OrderOutcome, PaymentAttempt, PaymentOutcome, TicketingQuery
 from journey.models.impact_evaluation import EvaluationStatus, ImpactEvaluation, Recommendation
+from journey.models.recovery_execution import (
+    CancellationAttempt,
+    CancellationOutcome,
+    RecoveryExecution,
+    RecoveryExecutionStatus,
+    ReplacementOutcome,
+)
 from journey.models.verification import (
     PassengerRequirementField,
     PriceChange,
@@ -55,6 +62,7 @@ from journey.services.disruption_injector_service import DisruptionInjectorServi
 from journey.services.conditions.ticketing_condition import TicketingSuccessCondition
 from journey.services.event_service import EventService
 from journey.services.impact_evaluation_service import ImpactEvaluationService
+from journey.services.recovery_execution_service import RecoveryExecutionService
 from journey.services.journey_service import JourneyService
 from journey.services.objective_parser import ObjectiveParser
 from journey.services.scoring_service import ScoringService
@@ -68,6 +76,8 @@ __all__ = [
     "AuthorisationDecision",
     "AuthorisationPolicyEngine",
     "BookingService",
+    "CancellationAttempt",
+    "CancellationOutcome",
     "ConditionResult",
     "ConnectionEvaluation",
     "ConstrainedField",
@@ -105,7 +115,11 @@ __all__ = [
     "ProposedAction",
     "Rationale",
     "Recommendation",
+    "RecoveryExecution",
+    "RecoveryExecutionService",
+    "RecoveryExecutionStatus",
     "RejectionReason",
+    "ReplacementOutcome",
     "Rule",
     "ScoredOption",
     "ScoringOutcome",
