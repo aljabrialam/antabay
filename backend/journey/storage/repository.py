@@ -1315,7 +1315,7 @@ def _row_to_impact_evaluation(row: Any) -> "ImpactEvaluation":
 # ScoringRun JSON serialization helpers
 # ---------------------------------------------------------------------------
 
-def _leg_to_dict(leg: Leg) -> dict:
+def _leg_to_dict(leg: Leg) -> dict[str, Any]:
     return {
         "leg_id": leg.leg_id, "option_id": leg.option_id,
         "segment_index": leg.segment_index, "carrier": leg.carrier,
@@ -1329,7 +1329,7 @@ def _leg_to_dict(leg: Leg) -> dict:
     }
 
 
-def _option_to_dict(opt: FlightOption) -> dict:
+def _option_to_dict(opt: FlightOption) -> dict[str, Any]:
     return {
         "option_id": opt.option_id, "journey_id": opt.journey_id,
         "search_record_id": opt.search_record_id, "fid": opt.fid,
@@ -1344,7 +1344,7 @@ def _option_to_dict(opt: FlightOption) -> dict:
     }
 
 
-def _option_from_dict(d: dict) -> FlightOption:
+def _option_from_dict(d: dict[str, Any]) -> FlightOption:
     return FlightOption(
         option_id=d["option_id"], journey_id=d["journey_id"],
         search_record_id=d["search_record_id"], fid=d["fid"],
@@ -1359,14 +1359,14 @@ def _option_from_dict(d: dict) -> FlightOption:
     )
 
 
-def _elim_to_dict(e: EliminationRecord | None) -> dict | None:
+def _elim_to_dict(e: EliminationRecord | None) -> dict[str, Any] | None:
     if e is None:
         return None
     return {"option_id": e.option_id, "reason_code": e.reason_code,
             "reason_detail": e.reason_detail, "constraint_id": e.constraint_id}
 
 
-def _rationale_to_dict(r: Rationale | None) -> dict | None:
+def _rationale_to_dict(r: Rationale | None) -> dict[str, Any] | None:
     if r is None:
         return None
     return {"option_id": r.option_id, "objective_elements": r.objective_elements,
@@ -1374,14 +1374,14 @@ def _rationale_to_dict(r: Rationale | None) -> dict | None:
             "total_cost": str(r.total_cost) if r.total_cost is not None else None}
 
 
-def _rejection_to_dict(r: RejectionReason | None) -> dict | None:
+def _rejection_to_dict(r: RejectionReason | None) -> dict[str, Any] | None:
     if r is None:
         return None
     return {"option_id": r.option_id, "reason_code": r.reason_code,
             "reason_detail": r.reason_detail}
 
 
-def _conn_eval_to_dict(c: ConnectionEvaluation | None) -> dict | None:
+def _conn_eval_to_dict(c: ConnectionEvaluation | None) -> dict[str, Any] | None:
     if c is None:
         return None
     return {"option_id": c.option_id, "connection_times": c.connection_times,
@@ -1390,7 +1390,7 @@ def _conn_eval_to_dict(c: ConnectionEvaluation | None) -> dict | None:
             "impossible_connections": c.impossible_connections}
 
 
-def _scored_option_to_dict(so: ScoredOption) -> dict:
+def _scored_option_to_dict(so: ScoredOption) -> dict[str, Any]:
     return {
         "option": _option_to_dict(so.option),
         "outcome": so.outcome.value,
@@ -1402,7 +1402,7 @@ def _scored_option_to_dict(so: ScoredOption) -> dict:
     }
 
 
-def _scored_option_from_dict(d: dict) -> ScoredOption:
+def _scored_option_from_dict(d: dict[str, Any]) -> ScoredOption:
     elim_d = d["elimination"]
     rat_d = d["rationale"]
     rej_d = d["rejection_reason"]
@@ -1424,7 +1424,7 @@ def _scored_option_from_dict(d: dict) -> ScoredOption:
     )
 
 
-def _no_sat_to_dict(n: NoSatisfyingOptionReport | None) -> dict | None:
+def _no_sat_to_dict(n: NoSatisfyingOptionReport | None) -> dict[str, Any] | None:
     if n is None:
         return None
     return {"unsatisfied_constraints": n.unsatisfied_constraints,

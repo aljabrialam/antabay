@@ -4,7 +4,28 @@
 
 **Created**: 2026-08-28
 
-**Status**: Draft
+**Status**: Superseded (2026-08-29)
+
+**Superseded rationale**: This feature proposed a standalone contract-
+enforcement library (`backend/atlas/`) — typed models, an endpoint
+allowlist, canonical pricing, error classification, call-budget tracking —
+sitting in front of every feature that calls the travel API. In practice,
+features 001 through 012 each achieved this specification's actual safety
+guarantees (opaque identifiers preserved byte-for-byte, `Decimal` for every
+monetary value, every field traced to a verified capability-map entry, no
+call to an undocumented endpoint) directly in their own
+`journey/models/*.py` and `journey/services/*.py`, with no dependency on
+`backend/atlas/`. That package was never imported by any of them. Building
+out the remaining 38 tasks (Pydantic models per endpoint, pricing,
+error/budget/telemetry modules, a dedicated CI workflow) would add a
+second, parallel implementation of guarantees the working system already
+enforces inline, with nothing left to consume it — the "no premature
+abstraction" and "no building for a hypothetical future requirement"
+principles this project otherwise follows argue against it. The 17 tasks
+already completed (`OpaqueId`, the endpoint allowlist, `OrderStatus`
+normalisation) remain in the tree as real, tested, working code — just
+unused by the rest of the system. Phases 4 onward (T018–T055) are marked
+accordingly in tasks.md, not completed.
 
 **Input**: External contract definition sourced from `.antabay/atlas-capability-map.md`
 (verified against the Atlas API sandbox on 2026-08-15).

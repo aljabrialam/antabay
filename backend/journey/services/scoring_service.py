@@ -13,6 +13,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from journey.models.flight import FlightOption, Leg
 from journey.models.objective import ConstraintType, TravelObjective
@@ -328,9 +329,9 @@ class ScoringService:
 
         active_prefs = [p for p in prefs if not p.startswith("min_connection_") and p != "direct_only"]
 
-        def _pref_sort_key(item: tuple[FlightOption, ConnectionEvaluation | None]):
+        def _pref_sort_key(item: tuple[FlightOption, ConnectionEvaluation | None]) -> list[Any]:
             opt, _ = item
-            keys: list = []
+            keys: list[Any] = []
             for pref in active_prefs:
                 if pref == "cost":
                     keys.append(_total_cost(opt))
@@ -352,7 +353,7 @@ class ScoringService:
         # Implicit scarcity tiebreaker when "scarcity" not already in prefs
         use_implicit_scarcity = "scarcity" not in active_prefs
 
-        def _full_sort_key(item: tuple[FlightOption, ConnectionEvaluation | None]):
+        def _full_sort_key(item: tuple[FlightOption, ConnectionEvaluation | None]) -> list[Any]:
             opt, _ = item
             base = _pref_sort_key(item)
             if use_implicit_scarcity:

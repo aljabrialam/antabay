@@ -14,7 +14,7 @@
 
 - [x] T001 Create VCR cassette directory `backend/fixtures/atlas/cassettes/flight_search/` and add placeholder `.gitkeep`
 - [x] T002 [P] Copy `backend/fixtures/atlas/sel_tyo_search.json` as `backend/fixtures/atlas/cassettes/flight_search/search_sel_tyo.yaml` seed cassette (convert JSON fixture to VCR YAML format matching pytest-recording schema)
-- [ ] T003 [P] Create empty test files with module docstrings: `backend/tests/unit/test_flight_option.py`, `backend/tests/unit/test_flight_search_service.py`, `backend/tests/integration/test_flight_search_persistence.py`, `backend/tests/contract/test_flight_search_contract.py`
+- [X] T003 [P] Create empty test files with module docstrings: `backend/tests/unit/test_flight_option.py`, `backend/tests/unit/test_flight_search_service.py`, `backend/tests/integration/test_flight_search_persistence.py`, `backend/tests/contract/test_flight_search_contract.py`
 
 ---
 
@@ -165,8 +165,8 @@
 **Purpose**: Traceability confirmation, type checking, and cassette infrastructure.
 
 - [X] T030 [P] Run full test suite and confirm all tests pass (`pytest backend/tests/ -v --tb=short`)
-- [ ] T031 [P] Run mypy on new modules (`mypy backend/journey/models/flight.py backend/journey/services/flight_search.py backend/journey/storage/repository.py`)
-- [ ] T032 [P] Verify traceability matrix from `data-model.md` — each FR/NFR test name must exist and pass:
+- [X] T031 [P] Run mypy on new modules (`mypy backend/journey/models/flight.py backend/journey/services/flight_search.py backend/journey/storage/repository.py`)
+- [X] T032 [P] Verify traceability matrix from `data-model.md` — each FR/NFR test name must exist and pass:
   - `test_flight_option.py::test_identifiers_preserved_verbatim` (FR-003)
   - `test_flight_option.py::test_freshness_timestamps_recorded` (FR-004)
   - `test_flight_option.py::test_remaining_seconds_uses_now_not_receipt` (FR-005)
@@ -180,8 +180,8 @@
   - `test_flight_search_service.py::test_rate_limit_no_retry` (NFR-002)
   - `test_flight_search_service.py::test_empty_result_no_exception` (FR-010)
   - `test_flight_search_persistence.py::test_raw_response_persisted` (NFR-001)
-- [ ] T033 Document Tier 2 cassette recording procedure in `specs/002-flight-search/quickstart.md` (add note: requires `ATLAS_CLIENT_ID` + `ATLAS_CLIENT_SECRET`; run `pytest --record-mode=new_episodes` to capture live cassettes)
-- [ ] T034 Run quickstart.md Tier 1 validation scenarios and confirm output matches expected (Scenario 1 and Scenario 2)
+- [X] T033 Document Tier 2 cassette recording procedure in `specs/002-flight-search/quickstart.md` (add note: requires `ATLAS_CLIENT_ID` + `ATLAS_CLIENT_SECRET`; run `pytest --record-mode=new_episodes` to capture live cassettes)
+- [X] T034 Run quickstart.md Tier 1 validation scenarios and confirm output matches expected (Scenario 1 and Scenario 2)
 
 ---
 

@@ -162,13 +162,13 @@ pytest backend/tests/unit/test_scoring_service.py::TestImpossibleConnection -v
 
 **Purpose**: Add `scoring_runs` table and repository methods so `ScoringRun` can be persisted and reloaded from the journey database.
 
-- [ ] T054 Write failing integration tests in `backend/tests/integration/test_scoring_persistence.py`: `TestScoringRunRoundTrip` — persist a `ScoringRun` with a selected option, reload it, assert all scalar fields match; `TestScoringRunWithNoSatisfying` — persist a run where `no_satisfying_option` is set, reload and assert fields (TDD gate: MUST fail before T056)
-- [ ] T055 Write `TestGetScoringRunNotFound` in `backend/tests/integration/test_scoring_persistence.py`: `repo.get_scoring_run("nonexistent")` raises a named exception (TDD gate: MUST fail before T056)
-- [ ] T056 Add `scoring_runs` table to `backend/journey/storage/tables.py` with columns: `run_id` TEXT PK, `journey_id` TEXT, `evaluated_at` TEXT, `objective_json` TEXT, `result_json` TEXT, `selected_option_id` TEXT NULLABLE, `option_count` INT, `eliminated_count` INT, `created_at` TEXT
-- [ ] T057 Implement `save_scoring_run(run: ScoringRun, journey_id: str) -> None` in `backend/journey/storage/repository.py` — serialises `ScoringRun` to JSON and writes to `scoring_runs` table
-- [ ] T058 Implement `get_scoring_run(run_id: str) -> ScoringRun` in `backend/journey/storage/repository.py` — reads row, deserialises JSON, reconstructs `ScoringRun`; raises `ScoringRunNotFoundError` if absent
-- [ ] T059 Add `ScoringRunNotFoundError` to `backend/journey/errors.py`
-- [ ] T060 Run `pytest backend/tests/integration/test_scoring_persistence.py -v` — all tests must pass
+- [X] T054 Write failing integration tests in `backend/tests/integration/test_scoring_persistence.py`: `TestScoringRunRoundTrip` — persist a `ScoringRun` with a selected option, reload it, assert all scalar fields match; `TestScoringRunWithNoSatisfying` — persist a run where `no_satisfying_option` is set, reload and assert fields (TDD gate: MUST fail before T056)
+- [X] T055 Write `TestGetScoringRunNotFound` in `backend/tests/integration/test_scoring_persistence.py`: `repo.get_scoring_run("nonexistent")` raises a named exception (TDD gate: MUST fail before T056)
+- [X] T056 Add `scoring_runs` table to `backend/journey/storage/tables.py` with columns: `run_id` TEXT PK, `journey_id` TEXT, `evaluated_at` TEXT, `objective_json` TEXT, `result_json` TEXT, `selected_option_id` TEXT NULLABLE, `option_count` INT, `eliminated_count` INT, `created_at` TEXT
+- [X] T057 Implement `save_scoring_run(run: ScoringRun, journey_id: str) -> None` in `backend/journey/storage/repository.py` — serialises `ScoringRun` to JSON and writes to `scoring_runs` table
+- [X] T058 Implement `get_scoring_run(run_id: str) -> ScoringRun` in `backend/journey/storage/repository.py` — reads row, deserialises JSON, reconstructs `ScoringRun`; raises `ScoringRunNotFoundError` if absent
+- [X] T059 Add `ScoringRunNotFoundError` to `backend/journey/errors.py`
+- [X] T060 Run `pytest backend/tests/integration/test_scoring_persistence.py -v` — all tests must pass
 
 **Checkpoint**: ScoringRun persists to and reloads from SQLite correctly.
 
@@ -178,10 +178,10 @@ pytest backend/tests/unit/test_scoring_service.py::TestImpossibleConnection -v
 
 **Purpose**: Full suite validation, traceability confirmation, and documentation.
 
-- [ ] T061 Run full unit suite `pytest backend/tests/unit/test_scoring_service.py -v` and confirm all tests pass (zero failures, zero errors)
-- [ ] T062 Run full integration suite `pytest backend/tests/integration/ -v` and confirm no regressions from feature 002 tests
-- [ ] T063 [P] Verify each quickstart.md scenario (Scenarios 1–10) maps to at least one passing test; document mapping in a comment block at the top of `backend/tests/unit/test_scoring_service.py`
-- [ ] T064 [P] Confirm `backend/journey/models/scoring.py` is importable from `backend/journey/__init__.py`; add re-exports if needed
+- [X] T061 Run full unit suite `pytest backend/tests/unit/test_scoring_service.py -v` and confirm all tests pass (zero failures, zero errors)
+- [X] T062 Run full integration suite `pytest backend/tests/integration/ -v` and confirm no regressions from feature 002 tests
+- [X] T063 [P] Verify each quickstart.md scenario (Scenarios 1–10) maps to at least one passing test; document mapping in a comment block at the top of `backend/tests/unit/test_scoring_service.py`
+- [X] T064 [P] Confirm `backend/journey/models/scoring.py` is importable from `backend/journey/__init__.py`; add re-exports if needed
 
 ---
 

@@ -4,6 +4,19 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 # Tasks: Atlas Capability Contract
 
+**SUPERSEDED (2026-08-29)**: Phases 1–2 (T001–T013) and US1 (T014–T017)
+were completed and remain in the tree as real, working code
+(`backend/atlas/identifiers.py`, `backend/atlas/allowlist.py`,
+`backend/atlas/models/_base.py`). Phases US2 onward (T018–T055) are
+**not being completed** — features 001–012 each achieved this
+specification's safety guarantees directly in their own
+`journey/models/*.py`/`journey/services/*.py`, and none of them import
+`backend/atlas/`. Building the remaining 38 tasks would duplicate
+guarantees the working system already enforces, with nothing left to
+consume the result. See spec.md's "Superseded rationale" for the full
+reasoning. Remaining tasks below are left unchecked and annotated
+`Not built — superseded`, not silently dropped.
+
 **Input**: Design documents from `specs/000-atlas-capability-contract/`
 
 **Prerequisites**: plan.md ✅ | spec.md ✅ | research.md ✅ | data-model.md ✅ | contracts/ ✅ | quickstart.md ✅
@@ -81,21 +94,21 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 ### Tests for User Story 2 ⚠️ Write and confirm failing FIRST
 
-- [ ] T018 [P] [US2] Write failing contract tests for search models in `backend/tests/contract/test_models.py`: parse `fixtures/atlas/sel_tyo_search.json`; assert `routing.fid` is `OpaqueId`; assert `routing.adult_price` is `Decimal`; assert extra field raises `ValidationError` (FR-003, SC-002)
-- [ ] T019 [P] [US2] Write failing contract tests for verify models in `backend/tests/contract/test_models.py`: parse `fixtures/atlas/sel_tyo_verify.json`; assert `session_id` is `OpaqueId`; assert `routing.expire_time` is `None`; assert `price_change.is_price_change` is `bool` (FR-003)
-- [ ] T020 [P] [US2] Write failing contract tests for webhook model in `backend/tests/contract/test_models.py`: parse `fixtures/atlas/webhook_order_ticketed.json`; assert `data.order_status` is `OrderStatus.TICKETED` (integer `2` normalised); assert `status == -1` does not block parse (FR-003, FR-006, SC-006)
+- [ ] T018 [P] [US2] Not built — superseded: Write failing contract tests for search models in `backend/tests/contract/test_models.py`: parse `fixtures/atlas/sel_tyo_search.json`; assert `routing.fid` is `OpaqueId`; assert `routing.adult_price` is `Decimal`; assert extra field raises `ValidationError` (FR-003, SC-002)
+- [ ] T019 [P] [US2] Not built — superseded: Write failing contract tests for verify models in `backend/tests/contract/test_models.py`: parse `fixtures/atlas/sel_tyo_verify.json`; assert `session_id` is `OpaqueId`; assert `routing.expire_time` is `None`; assert `price_change.is_price_change` is `bool` (FR-003)
+- [ ] T020 [P] [US2] Not built — superseded: Write failing contract tests for webhook model in `backend/tests/contract/test_models.py`: parse `fixtures/atlas/webhook_order_ticketed.json`; assert `data.order_status` is `OrderStatus.TICKETED` (integer `2` normalised); assert `status == -1` does not block parse (FR-003, FR-006, SC-006)
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Implement `Segment`, `BaggageElement`, `FareRule`, `Rule`, `BookingRequirementField`, `BookingRequirement` Pydantic models in `backend/atlas/models/search.py` (FR-003)
-- [ ] T022 [P] [US2] Implement `Routing`, `SearchRequest`, `SearchResponse` Pydantic models in `backend/atlas/models/search.py` — `OpaqueId` for `fid` and `routing_identifier`; `Decimal` for monetary fields; `extra="forbid"` (FR-003)
-- [ ] T023 [P] [US2] Implement `PriceChange`, `VerifyRequest`, `VerifyResponse` Pydantic models in `backend/atlas/models/verify.py` — `OpaqueId` for `session_id`; `extra="forbid"` (FR-003)
-- [ ] T024 [P] [US2] Implement `Passenger`, `Contact`, `PaxTicketInfo`, `OrderRequest`, `OrderResponse` Pydantic models in `backend/atlas/models/order.py` — `OpaqueId` for `order_no`, `pnr_code`, `duplicate_orders`; `tkt_limit_time` as `datetime`; `extra="forbid"` (FR-003)
-- [ ] T025 [P] [US2] Implement `PayRequest`, `PayResponse` Pydantic models in `backend/atlas/models/pay.py` — `OpaqueId` for `order_no`; `extra="forbid"` (FR-003)
-- [ ] T026 [P] [US2] Implement `QueryOrderRequest`, `QueryOrderResponse` Pydantic models in `backend/atlas/models/query.py` — `order_status` field uses `OrderStatus` with string→int coercion validator; `OpaqueId` for `order_no`; `extra="forbid"` (FR-003, FR-006)
-- [ ] T027 [US2] Implement `WebhookData`, `WebhookEvent` Pydantic models in `backend/atlas/models/webhook.py` — `order_status` field uses `OrderStatus` directly (integer from webhook); `OpaqueId` for `order_no`; `extra="forbid"`; webhook `status` field stored as-is (not gated on `== 0`) (FR-003, FR-006)
-- [ ] T028 [US2] Export all model symbols from `backend/atlas/__init__.py`
-- [ ] T029 [US2] Confirm all model tests in `test_models.py` pass; run `mypy backend/atlas/models/ --strict` and confirm zero errors
+- [ ] T021 [P] [US2] Not built — superseded: Implement `Segment`, `BaggageElement`, `FareRule`, `Rule`, `BookingRequirementField`, `BookingRequirement` Pydantic models in `backend/atlas/models/search.py` (FR-003)
+- [ ] T022 [P] [US2] Not built — superseded: Implement `Routing`, `SearchRequest`, `SearchResponse` Pydantic models in `backend/atlas/models/search.py` — `OpaqueId` for `fid` and `routing_identifier`; `Decimal` for monetary fields; `extra="forbid"` (FR-003)
+- [ ] T023 [P] [US2] Not built — superseded: Implement `PriceChange`, `VerifyRequest`, `VerifyResponse` Pydantic models in `backend/atlas/models/verify.py` — `OpaqueId` for `session_id`; `extra="forbid"` (FR-003)
+- [ ] T024 [P] [US2] Not built — superseded: Implement `Passenger`, `Contact`, `PaxTicketInfo`, `OrderRequest`, `OrderResponse` Pydantic models in `backend/atlas/models/order.py` — `OpaqueId` for `order_no`, `pnr_code`, `duplicate_orders`; `tkt_limit_time` as `datetime`; `extra="forbid"` (FR-003)
+- [ ] T025 [P] [US2] Not built — superseded: Implement `PayRequest`, `PayResponse` Pydantic models in `backend/atlas/models/pay.py` — `OpaqueId` for `order_no`; `extra="forbid"` (FR-003)
+- [ ] T026 [P] [US2] Not built — superseded: Implement `QueryOrderRequest`, `QueryOrderResponse` Pydantic models in `backend/atlas/models/query.py` — `order_status` field uses `OrderStatus` with string→int coercion validator; `OpaqueId` for `order_no`; `extra="forbid"` (FR-003, FR-006)
+- [ ] T027 [US2] Not built — superseded: Implement `WebhookData`, `WebhookEvent` Pydantic models in `backend/atlas/models/webhook.py` — `order_status` field uses `OrderStatus` directly (integer from webhook); `OpaqueId` for `order_no`; `extra="forbid"`; webhook `status` field stored as-is (not gated on `== 0`) (FR-003, FR-006)
+- [ ] T028 [US2] Not built — superseded: Export all model symbols from `backend/atlas/__init__.py`
+- [ ] T029 [US2] Not built — superseded: Confirm all model tests in `test_models.py` pass; run `mypy backend/atlas/models/ --strict` and confirm zero errors
 
 **Checkpoint**: All three fixture files parse successfully into typed models. `routing.fare_code` access fails Mypy.
 
@@ -109,13 +122,13 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 ### Tests for User Story 3 ⚠️ Write and confirm failing FIRST
 
-- [ ] T030 [US3] Extend `backend/tests/unit/test_identifiers.py`: add round-trip test — create `OpaqueId` from a raw string, store it, retrieve it, confirm byte-for-byte identity with the original; add passthrough test confirming `str(opaque_id)` equals the original string (FR-004, SC-002)
-- [ ] T031 [US3] Add Mypy negative test comment in `backend/tests/unit/test_identifiers.py` documenting that `opaque_id[0:4]` and `opaque_id + "suffix"` produce Mypy errors (to be verified manually during review)
+- [ ] T030 [US3] Not built — superseded: Extend `backend/tests/unit/test_identifiers.py`: add round-trip test — create `OpaqueId` from a raw string, store it, retrieve it, confirm byte-for-byte identity with the original; add passthrough test confirming `str(opaque_id)` equals the original string (FR-004, SC-002)
+- [ ] T031 [US3] Not built — superseded: Add Mypy negative test comment in `backend/tests/unit/test_identifiers.py` documenting that `opaque_id[0:4]` and `opaque_id + "suffix"` produce Mypy errors (to be verified manually during review)
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Verify all `OpaqueId` usages in models from Phase 4 are correct — `fid`, `routing_identifier`, `session_id`, `order_no`, `pnr_code`, `ticket_nos`, `airline_pnrs`, `duplicate_orders` are all typed as `OpaqueId`, not `str` (FR-004)
-- [ ] T033 [US3] Confirm `test_identifiers.py` full suite passes; run `mypy backend/atlas/identifiers.py --strict` zero errors
+- [ ] T032 [US3] Not built — superseded: Verify all `OpaqueId` usages in models from Phase 4 are correct — `fid`, `routing_identifier`, `session_id`, `order_no`, `pnr_code`, `ticket_nos`, `airline_pnrs`, `duplicate_orders` are all typed as `OpaqueId`, not `str` (FR-004)
+- [ ] T033 [US3] Not built — superseded: Confirm `test_identifiers.py` full suite passes; run `mypy backend/atlas/identifiers.py --strict` zero errors
 
 **Checkpoint**: All identifier fields are `OpaqueId`; Mypy gate enforced.
 
@@ -129,14 +142,14 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 ### Tests for User Story 4 ⚠️ Write and confirm failing FIRST
 
-- [ ] T034 [US4] Write failing contract tests in `backend/tests/contract/test_pricing.py`: `canonical_total_price(Decimal("66.43"), Decimal("23.96"), Decimal("0.00"))` returns `CanonicalPrice(amount=Decimal("90.39"), currency="USD")`; function is importable only from `backend/atlas/pricing`; `CanonicalPrice` has no arithmetic operators (FR-005, SC-003)
+- [ ] T034 [US4] Not built — superseded: Write failing contract tests in `backend/tests/contract/test_pricing.py`: `canonical_total_price(Decimal("66.43"), Decimal("23.96"), Decimal("0.00"))` returns `CanonicalPrice(amount=Decimal("90.39"), currency="USD")`; function is importable only from `backend/atlas/pricing`; `CanonicalPrice` has no arithmetic operators (FR-005, SC-003)
 
 ### Implementation for User Story 4
 
-- [ ] T035 [US4] Implement `CanonicalPrice` frozen dataclass and `canonical_total_price()` function in `backend/atlas/pricing.py` — `amount: Decimal`, `currency: Literal["USD"]`; no arithmetic operators on `CanonicalPrice` (FR-005)
-- [ ] T036 [US4] Add ruff noqa-style CI grep rule (or ruff custom check) to `backend/pyproject.toml` that fails if `adult_price.*adult_tax` or `adultPrice.*adultTax` appears outside `pricing.py` (FR-005, SC-003)
-- [ ] T037 [US4] Export `canonical_total_price`, `CanonicalPrice` from `backend/atlas/__init__.py`
-- [ ] T038 [US4] Confirm `test_pricing.py` passes; run `mypy backend/atlas/pricing.py --strict` zero errors
+- [ ] T035 [US4] Not built — superseded: Implement `CanonicalPrice` frozen dataclass and `canonical_total_price()` function in `backend/atlas/pricing.py` — `amount: Decimal`, `currency: Literal["USD"]`; no arithmetic operators on `CanonicalPrice` (FR-005)
+- [ ] T036 [US4] Not built — superseded: Add ruff noqa-style CI grep rule (or ruff custom check) to `backend/pyproject.toml` that fails if `adult_price.*adult_tax` or `adultPrice.*adultTax` appears outside `pricing.py` (FR-005, SC-003)
+- [ ] T037 [US4] Not built — superseded: Export `canonical_total_price`, `CanonicalPrice` from `backend/atlas/__init__.py`
+- [ ] T038 [US4] Not built — superseded: Confirm `test_pricing.py` passes; run `mypy backend/atlas/pricing.py --strict` zero errors
 
 **Checkpoint**: Price test green with `90.39`. CI grep check rejects out-of-module price arithmetic.
 
@@ -150,15 +163,15 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 ### Tests for User Story 5 ⚠️ Write and confirm failing FIRST
 
-- [ ] T039 [P] [US5] Write failing contract tests in `backend/tests/contract/test_errors.py`: `classify(0)` → SUCCESS; `classify(318)` → `ReconcilableOutcome` with non-empty `duplicate_orders`; `classify(800)` → TERMINAL; `classify(900)` → TERMINAL; `classify(9999)` → TERMINAL (FR-007, FR-008, SC-004)
-- [ ] T040 [P] [US5] Write failing contract tests in `backend/tests/contract/test_budget.py`: budget exhausted → raises `BudgetExhausted`; rate-limit hold with future `retry_after` → raises `RateLimitHold`; `retry_after=None` → indefinite hold, raises `RateLimitHold`; hold with past `retry_after` → call proceeds (FR-010, FR-011, SC-005)
+- [ ] T039 [P] [US5] Not built — superseded: Write failing contract tests in `backend/tests/contract/test_errors.py`: `classify(0)` → SUCCESS; `classify(318)` → `ReconcilableOutcome` with non-empty `duplicate_orders`; `classify(800)` → TERMINAL; `classify(900)` → TERMINAL; `classify(9999)` → TERMINAL (FR-007, FR-008, SC-004)
+- [ ] T040 [P] [US5] Not built — superseded: Write failing contract tests in `backend/tests/contract/test_budget.py`: budget exhausted → raises `BudgetExhausted`; rate-limit hold with future `retry_after` → raises `RateLimitHold`; `retry_after=None` → indefinite hold, raises `RateLimitHold`; hold with past `retry_after` → call proceeds (FR-010, FR-011, SC-005)
 
 ### Implementation for User Story 5
 
-- [ ] T041 [P] [US5] Implement `ErrorCode` IntEnum, `ErrorDisposition` enum, `ReconcilableOutcome` dataclass, and `classify()` function in `backend/atlas/errors.py` — codes 0, 318, 800, 900; unknown default terminal; `classify(318)` returns `ReconcilableOutcome` populated from `duplicate_orders` parameter (FR-007, FR-008)
-- [ ] T042 [P] [US5] Implement `BudgetExhausted` exception, `RateLimitHold` dataclass, and `CallBudget` class in `backend/atlas/budget.py` — `check_and_record()` raises `BudgetExhausted` when limit reached; `apply_hold()` stores hold; hold with `retry_after=None` is indefinite; hold with past `retry_after` is cleared (FR-010, FR-011)
-- [ ] T043 [US5] Export `ErrorCode`, `ErrorDisposition`, `ReconcilableOutcome`, `classify`, `CallBudget`, `RateLimitHold`, `BudgetExhausted` from `backend/atlas/__init__.py`
-- [ ] T044 [US5] Confirm `test_errors.py` and `test_budget.py` both pass; run `mypy backend/atlas/errors.py backend/atlas/budget.py --strict` zero errors
+- [ ] T041 [P] [US5] Not built — superseded: Implement `ErrorCode` IntEnum, `ErrorDisposition` enum, `ReconcilableOutcome` dataclass, and `classify()` function in `backend/atlas/errors.py` — codes 0, 318, 800, 900; unknown default terminal; `classify(318)` returns `ReconcilableOutcome` populated from `duplicate_orders` parameter (FR-007, FR-008)
+- [ ] T042 [P] [US5] Not built — superseded: Implement `BudgetExhausted` exception, `RateLimitHold` dataclass, and `CallBudget` class in `backend/atlas/budget.py` — `check_and_record()` raises `BudgetExhausted` when limit reached; `apply_hold()` stores hold; hold with `retry_after=None` is indefinite; hold with past `retry_after` is cleared (FR-010, FR-011)
+- [ ] T043 [US5] Not built — superseded: Export `ErrorCode`, `ErrorDisposition`, `ReconcilableOutcome`, `classify`, `CallBudget`, `RateLimitHold`, `BudgetExhausted` from `backend/atlas/__init__.py`
+- [ ] T044 [US5] Not built — superseded: Confirm `test_errors.py` and `test_budget.py` both pass; run `mypy backend/atlas/errors.py backend/atlas/budget.py --strict` zero errors
 
 **Checkpoint**: Error and budget tests green. `classify(318)` surfaces existing order reference. Rate-limit hold blocks retry.
 
@@ -170,15 +183,15 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 ### Tests ⚠️ Write and confirm failing FIRST
 
-- [ ] T045 [P] Write failing unit tests in `backend/tests/unit/test_telemetry.py`: `CallRecord` has `endpoint`, `outcome`, `elapsed_ms`, `journey_id`, `recorded_at` fields; records are immutable (no mutation after creation) (FR-009)
-- [ ] T046 [P] Write failing unit tests in `backend/tests/unit/test_freshness.py`: `from_offer()` with past `expire_time` → `is_usable()` returns `False`; `from_offer()` with future `expire_time` → `is_usable()` returns `True`; `from_session()` → `expires_at=None` → `is_usable()` returns `False`; `from_ticket()` with future `tkt_limit_time` → `is_usable()` returns `True` (FR-012)
+- [ ] T045 [P] Not built — superseded: Write failing unit tests in `backend/tests/unit/test_telemetry.py`: `CallRecord` has `endpoint`, `outcome`, `elapsed_ms`, `journey_id`, `recorded_at` fields; records are immutable (no mutation after creation) (FR-009)
+- [ ] T046 [P] Not built — superseded: Write failing unit tests in `backend/tests/unit/test_freshness.py`: `from_offer()` with past `expire_time` → `is_usable()` returns `False`; `from_offer()` with future `expire_time` → `is_usable()` returns `True`; `from_session()` → `expires_at=None` → `is_usable()` returns `False`; `from_ticket()` with future `tkt_limit_time` → `is_usable()` returns `True` (FR-012)
 
 ### Implementation
 
-- [ ] T047 [P] Implement `CallRecord` frozen dataclass in `backend/atlas/telemetry.py` — five fields; no mutation; `recorded_at` defaults to UTC now on construction (FR-009)
-- [ ] T048 [P] Implement `FreshnessWindow` frozen dataclass with `clock_type` discriminator, `issued_at`, `expires_at`, `is_usable(now)` method, and three factory class methods (`from_offer`, `from_session`, `from_ticket`) in `backend/atlas/freshness.py` (FR-012)
-- [ ] T049 Export `CallRecord`, `FreshnessWindow` from `backend/atlas/__init__.py`
-- [ ] T050 Confirm `test_telemetry.py` and `test_freshness.py` pass; run `mypy backend/atlas/telemetry.py backend/atlas/freshness.py --strict` zero errors
+- [ ] T047 [P] Not built — superseded: Implement `CallRecord` frozen dataclass in `backend/atlas/telemetry.py` — five fields; no mutation; `recorded_at` defaults to UTC now on construction (FR-009)
+- [ ] T048 [P] Not built — superseded: Implement `FreshnessWindow` frozen dataclass with `clock_type` discriminator, `issued_at`, `expires_at`, `is_usable(now)` method, and three factory class methods (`from_offer`, `from_session`, `from_ticket`) in `backend/atlas/freshness.py` (FR-012)
+- [ ] T049 Not built — superseded: Export `CallRecord`, `FreshnessWindow` from `backend/atlas/__init__.py`
+- [ ] T050 Not built — superseded: Confirm `test_telemetry.py` and `test_freshness.py` pass; run `mypy backend/atlas/telemetry.py backend/atlas/freshness.py --strict` zero errors
 
 **Checkpoint**: All unit tests green. `FreshnessWindow` correctly rejects expired-on-receipt offers.
 
@@ -188,11 +201,11 @@ description: "Task list for Atlas Capability Contract (feature 000)"
 
 **Purpose**: Wire Mypy strict and pytest into CI; confirm full test suite green; generate HTML report.
 
-- [ ] T051 Create `.github/workflows/contract.yml` (or equivalent CI config) running `mypy backend/atlas/ --strict` and `pytest backend/tests/ --html=reports/contract.html --self-contained-html` on every push to any branch
-- [ ] T052 Run full test suite locally: `pytest backend/tests/ -v --html=reports/contract.html --self-contained-html` — confirm all tests pass; commit HTML report path to `.gitignore`
-- [ ] T053 Run `mypy backend/atlas/ --strict` — confirm zero errors across all modules
-- [ ] T054 [P] Verify Tier 1 / Tier 2 fixture parity: run `pytest backend/tests/contract/ --record-mode=new_episodes` against live sandbox (requires `ATLAS_CLIENT_ID` + `ATLAS_CLIENT_SECRET`); commit any new cassettes to `fixtures/atlas/cassettes/`
-- [ ] T055 [P] Generate traceability confirmation: for each FR-001 through FR-012 and NFR-001 through NFR-003, confirm at least one test in the suite references the requirement (cross-check against `data-model.md` traceability matrix)
+- [ ] T051 Not built — superseded: Create `.github/workflows/contract.yml` (or equivalent CI config) running `mypy backend/atlas/ --strict` and `pytest backend/tests/ --html=reports/contract.html --self-contained-html` on every push to any branch
+- [ ] T052 Not built — superseded: Run full test suite locally: `pytest backend/tests/ -v --html=reports/contract.html --self-contained-html` — confirm all tests pass; commit HTML report path to `.gitignore`
+- [ ] T053 Not built — superseded: Run `mypy backend/atlas/ --strict` — confirm zero errors across all modules
+- [ ] T054 [P] Not built — superseded: Verify Tier 1 / Tier 2 fixture parity: run `pytest backend/tests/contract/ --record-mode=new_episodes` against live sandbox (requires `ATLAS_CLIENT_ID` + `ATLAS_CLIENT_SECRET`); commit any new cassettes to `fixtures/atlas/cassettes/`
+- [ ] T055 [P] Not built — superseded: Generate traceability confirmation: for each FR-001 through FR-012 and NFR-001 through NFR-003, confirm at least one test in the suite references the requirement (cross-check against `data-model.md` traceability matrix)
 
 **Checkpoint**: CI passes on every push. Mypy strict clean. All 12 FRs and 3 NFRs have test coverage. Tier 1 cassettes committed.
 
