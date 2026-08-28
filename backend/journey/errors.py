@@ -85,3 +85,12 @@ class OrderNotFoundError(Exception):
     def __init__(self, order_no: str) -> None:
         super().__init__(f"No successfully created order found: {order_no!r}")
         self.order_no = order_no
+
+
+class UnregisteredActionTypeError(Exception):
+    """Raised when the post-action verification gate is asked to verify an
+    action_type with no registered SuccessCondition (spec 012, FR-003)."""
+
+    def __init__(self, action_type: str) -> None:
+        super().__init__(f"No SuccessCondition registered for action_type: {action_type!r}")
+        self.action_type = action_type

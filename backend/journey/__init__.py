@@ -35,23 +35,34 @@ from journey.models.verification import (
     VerificationOutcome,
     VerificationResult,
 )
+from journey.models.verification_gate import (
+    ConditionResult,
+    VerificationAttempt,
+)
+from journey.models.verification_gate import (
+    VerificationOutcome as GateVerificationOutcome,
+)
 from journey.services.booking_service import BookingService
+from journey.services.conditions.ticketing_condition import TicketingSuccessCondition
 from journey.services.event_service import EventService
 from journey.services.journey_service import JourneyService
 from journey.services.objective_parser import ObjectiveParser
 from journey.services.scoring_service import ScoringService
 from journey.services.state_service import IdentifierNotFoundError, JourneyStateService
+from journey.services.verification_gate import PostActionVerifier
 from journey.services.verification_service import VerificationService
 
 __all__ = [
     "AuditEntry",
     "BookingService",
+    "ConditionResult",
     "ConnectionEvaluation",
     "ConstrainedField",
     "ConstraintType",
     "EliminationRecord",
     "EventService",
     "EventType",
+    "GateVerificationOutcome",
     "HeldIdentifier",
     "IdentifierFreshness",
     "IdentifierNotFoundError",
@@ -71,6 +82,7 @@ __all__ = [
     "PassengerRequirementField",
     "PaymentAttempt",
     "PaymentOutcome",
+    "PostActionVerifier",
     "PriceChange",
     "Rationale",
     "RejectionReason",
@@ -79,7 +91,9 @@ __all__ = [
     "ScoringRun",
     "ScoringService",
     "TicketingQuery",
+    "TicketingSuccessCondition",
     "TravelObjective",
+    "VerificationAttempt",
     "VerificationOutcome",
     "VerificationResult",
     "VerificationService",

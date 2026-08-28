@@ -47,12 +47,14 @@ from journey.storage.tables import (
     scoring_runs,
     search_records,
     ticketing_queries,
+    verification_attempts,
     verifications,
 )
 
 if TYPE_CHECKING:
     from journey.models.booking import Order, PaymentAttempt, TicketingQuery
     from journey.models.verification import VerificationResult
+    from journey.models.verification_gate import VerificationAttempt
 
 
 class JourneyRepository:
@@ -759,6 +761,81 @@ class JourneyRepository:
             )
             for r in rows
         ]
+
+    # ------------------------------------------------------------------
+    # Post-action verification gate methods (012-post-action-verification)
+    # ------------------------------------------------------------------
+
+    def save_verification_attempt(self, attempt: "VerificationAttempt") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(verification_attempts).values(
+                    attempt_id=attempt.attempt_id,
+                    journey_id=attempt.journey_id,
+                    action_type=attempt.action_type,
+                    affected_record_id=attempt.affected_record_id,
+                    action_response_json=attempt.action_response_json,
+                    queried_at=attempt.queried_at.isoformat(),
+                    observed_at=attempt.observed_at.isoformat(),
+                    query_result_json=attempt.query_result_json,
+                    classification=attempt.classification.value,
+                    condition_result=attempt.condition_result.value,
+                    has_discrepancy=1 if attempt.has_discrepancy else 0,
+                    applied_to_state=1 if attempt.applied_to_state else 0,
+                )
+            )
+            conn.commit()
+
+    def _row_to_verification_attempt(self, row: Any) -> "VerificationAttempt":
+        from journey.models.verification_gate import (
+            ConditionResult,
+            VerificationAttempt,
+            VerificationOutcome,
+        )
+
+        return VerificationAttempt(
+            attempt_id=row["attempt_id"],
+            journey_id=row["journey_id"],
+            action_type=row["action_type"],
+            affected_record_id=row["affected_record_id"],
+            action_response_json=row["action_response_json"],
+            queried_at=datetime.fromisoformat(row["queried_at"]),
+            observed_at=datetime.fromisoformat(row["observed_at"]),
+            query_result_json=row["query_result_json"],
+            classification=VerificationOutcome(row["classification"]),
+            condition_result=ConditionResult(row["condition_result"]),
+            has_discrepancy=bool(row["has_discrepancy"]),
+            applied_to_state=bool(row["applied_to_state"]),
+        )
+
+    def get_verification_attempts(self, affected_record_id: str) -> list["VerificationAttempt"]:
+        with get_connection() as conn:
+            rows = (
+                conn.execute(
+                    select(verification_attempts)
+                    .where(verification_attempts.c.affected_record_id == affected_record_id)
+                    .order_by(verification_attempts.c.observed_at)
+                )
+                .mappings()
+                .all()
+            )
+        return [self._row_to_verification_attempt(r) for r in rows]
+
+    def get_latest_applied_attempt(self, affected_record_id: str) -> "VerificationAttempt | None":
+        with get_connection() as conn:
+            row = (
+                conn.execute(
+                    select(verification_attempts)
+                    .where(
+                        verification_attempts.c.affected_record_id == affected_record_id,
+                        verification_attempts.c.applied_to_state == 1,
+                    )
+                    .order_by(verification_attempts.c.observed_at.desc())
+                )
+                .mappings()
+                .first()
+            )
+        return self._row_to_verification_attempt(row) if row is not None else None
 
     # ------------------------------------------------------------------
     # Scoring persistence methods (003-option-scoring)

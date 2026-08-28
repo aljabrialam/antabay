@@ -203,3 +203,20 @@ ticketing_queries = Table(
     Column("confirmed", Integer, nullable=False, default=0),   # 0/1 — True only if every passenger has ticket numbers
     Column("is_terminal_error", Integer, nullable=False, default=0),  # 0/1 — True if errorCode was non-null
 )
+
+verification_attempts = Table(
+    "verification_attempts",
+    metadata,
+    Column("attempt_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("action_type", String, nullable=False),
+    Column("affected_record_id", String, nullable=False),
+    Column("action_response_json", Text, nullable=True),
+    Column("queried_at", String, nullable=False),              # ISO-8601 UTC
+    Column("observed_at", String, nullable=False),              # ISO-8601 UTC — governs FR-011 ordering
+    Column("query_result_json", Text, nullable=False),
+    Column("classification", String, nullable=False),          # SUCCESS | FAILURE | UNRESOLVED
+    Column("condition_result", String, nullable=False),        # SUCCESS | FAILURE | INCONCLUSIVE | NOT_FOUND
+    Column("has_discrepancy", Integer, nullable=False, default=0),   # 0/1
+    Column("applied_to_state", Integer, nullable=False, default=0),  # 0/1
+)
