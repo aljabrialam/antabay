@@ -1,4 +1,4 @@
-context_file: QODER.md
+context_file: CLAUDE.md
 context_files: []
 context_markers:
   start: <!-- SPECKIT START -->
