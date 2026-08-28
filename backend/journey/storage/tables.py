@@ -7,6 +7,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    UniqueConstraint,
 )
 
 metadata = MetaData()
@@ -125,4 +126,17 @@ scoring_runs = Table(
     Column("option_count", Integer, nullable=False),
     Column("eliminated_count", Integer, nullable=False),
     Column("created_at", String, nullable=False),     # ISO-8601 UTC
+)
+
+journey_events = Table(
+    "journey_events",
+    metadata,
+    Column("event_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("sequence", Integer, nullable=False),      # per-journey monotonic from 1; SSE Last-Event-ID
+    Column("event_type", String, nullable=False),
+    Column("payload_json", Text, nullable=False),     # JSON-encoded typed payload
+    Column("simulated", Integer, nullable=False, default=0),  # 0/1 (Principle V)
+    Column("recorded_at", String, nullable=False),    # ISO-8601 UTC
+    UniqueConstraint("journey_id", "sequence", name="uq_journey_events_journey_sequence"),
 )

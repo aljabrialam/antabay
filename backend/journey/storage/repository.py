@@ -9,6 +9,7 @@ from sqlalchemy import func, insert, select, update
 from sqlalchemy.engine import Connection
 
 from journey.models.flight import FlightOption, Leg, SearchOutcome, SearchRecord
+from journey.models.events import EventType, JourneyEvent
 from journey.models.journey import (
     AuditEntry,
     AuthorisationOutcome,
@@ -37,6 +38,7 @@ from journey.storage.tables import (
     authorisation_outcomes,
     flight_options,
     held_identifiers,
+    journey_events,
     journeys,
     legs,
     scoring_runs,
@@ -463,6 +465,88 @@ class JourneyRepository:
         if row is None:
             raise ScoringRunNotFoundError(run_id)
         return _scoring_run_from_json(row["result_json"])
+
+    # ------------------------------------------------------------------
+    # Journey event stream methods (006-agent-trace-console)
+    # ------------------------------------------------------------------
+
+    def append_event(
+        self,
+        journey_id: str,
+        event_type: EventType,
+        payload: dict[str, object],
+        simulated: bool = False,
+        recorded_at: datetime | None = None,
+    ) -> JourneyEvent:
+        """Append an event; sequence = MAX(sequence)+1 within the transaction."""
+        ts = recorded_at if recorded_at is not None else datetime.now(tz=timezone.utc)
+        event_id = str(uuid.uuid4())
+        with get_connection() as conn:
+            exists = conn.execute(
+                select(journeys.c.journey_id).where(journeys.c.journey_id == journey_id)
+            ).scalar()
+            if exists is None:
+                raise ValueError(f"Journey not found: {journey_id}")
+            last = conn.execute(
+                select(func.max(journey_events.c.sequence)).where(
+                    journey_events.c.journey_id == journey_id
+                )
+            ).scalar()
+            next_seq = (last or 0) + 1
+            conn.execute(
+                insert(journey_events).values(
+                    event_id=event_id,
+                    journey_id=journey_id,
+                    sequence=next_seq,
+                    event_type=event_type.value,
+                    payload_json=json.dumps(payload),
+                    simulated=1 if simulated else 0,
+                    recorded_at=ts.isoformat(),
+                )
+            )
+            conn.commit()
+        return JourneyEvent(
+            event_id=event_id,
+            journey_id=journey_id,
+            sequence=next_seq,
+            event_type=event_type,
+            payload=payload,
+            simulated=simulated,
+            recorded_at=ts,
+        )
+
+    def get_events_from_sequence(
+        self, journey_id: str, from_sequence: int = 0
+    ) -> list[JourneyEvent]:
+        """Return events with sequence > from_sequence, ordered ASC."""
+        with get_connection() as conn:
+            rows = conn.execute(
+                select(journey_events)
+                .where(
+                    journey_events.c.journey_id == journey_id,
+                    journey_events.c.sequence > from_sequence,
+                )
+                .order_by(journey_events.c.sequence)
+            ).mappings().all()
+        return [
+            JourneyEvent(
+                event_id=r["event_id"],
+                journey_id=r["journey_id"],
+                sequence=r["sequence"],
+                event_type=EventType(r["event_type"]),
+                payload=json.loads(r["payload_json"]),
+                simulated=bool(r["simulated"]),
+                recorded_at=datetime.fromisoformat(r["recorded_at"]),
+            )
+            for r in rows
+        ]
+
+    def journey_exists(self, journey_id: str) -> bool:
+        with get_connection() as conn:
+            row = conn.execute(
+                select(journeys.c.journey_id).where(journeys.c.journey_id == journey_id)
+            ).scalar()
+        return row is not None
 
 
 # ---------------------------------------------------------------------------

@@ -1,3 +1,7 @@
+from journey.models.events import (
+    EventType,
+    JourneyEvent,
+)
 from journey.models.journey import (
     AuditEntry,
     IdentifierFreshness,
@@ -24,6 +28,7 @@ from journey.models.scoring import (
     ScoringOutcome,
     ScoringRun,
 )
+from journey.services.event_service import EventService
 from journey.services.journey_service import JourneyService
 from journey.services.objective_parser import ObjectiveParser
 from journey.services.scoring_service import ScoringService
@@ -35,11 +40,14 @@ __all__ = [
     "ConstrainedField",
     "ConstraintType",
     "EliminationRecord",
+    "EventService",
+    "EventType",
     "HeldIdentifier",
     "IdentifierFreshness",
     "IdentifierNotFoundError",
     "InvalidTransitionError",
     "JourneyDisplay",
+    "JourneyEvent",
     "JourneyRecord",
     "JourneyService",
     "JourneyState",

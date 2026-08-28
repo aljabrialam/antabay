@@ -18,5 +18,6 @@ reports/
 fixtures/atlas/cassettes/
 *.tmp
 *.swp
+*.db
 .idea/
 .vscode/

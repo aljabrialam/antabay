@@ -19,9 +19,11 @@ dependencies = [
 dev = [
     "mypy>=1.10",
     "pytest>=8.0",
+    "pytest-asyncio>=0.23",
     "pytest-recording>=0.13",
     "pytest-html>=4.1",
     "vcrpy>=6.0",
+    "anyio>=4.0",
 ]
 
 [tool.mypy]
