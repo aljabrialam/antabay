@@ -48,7 +48,9 @@ class WebhookService:
             self._repo, {"ticketing": TicketingSuccessCondition()}
         )
 
-    def receive(self, raw_body: bytes, received_at: datetime) -> InboundNotification:
+    def receive(
+        self, raw_body: bytes, received_at: datetime, simulated: bool = False
+    ) -> InboundNotification:
         declared_event_type = ""
         order_reference: str | None = None
         try:
@@ -87,6 +89,7 @@ class WebhookService:
             journey_id=journey_id,
             associated=associated,
             confirmation_triggered=confirmation_triggered,
+            simulated=simulated,
         )
         self._repo.save_notification(notification)
         return notification
@@ -119,6 +122,7 @@ class WebhookService:
                     "declared_event_type": notification.declared_event_type,
                     "classification": attempt.classification.value,
                 },
+                simulated=notification.simulated,
             )
 
     def _extract_claim(self, notification: InboundNotification) -> Any:

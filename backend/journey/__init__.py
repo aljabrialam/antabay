@@ -50,6 +50,7 @@ from journey.models.verification_gate import (
 from journey.models.webhook import InboundNotification
 from journey.services.authorisation_policy_engine import AuthorisationPolicyEngine
 from journey.services.booking_service import BookingService
+from journey.services.disruption_injector_service import DisruptionInjectorService
 from journey.services.conditions.ticketing_condition import TicketingSuccessCondition
 from journey.services.event_service import EventService
 from journey.services.journey_service import JourneyService
@@ -69,6 +70,7 @@ __all__ = [
     "ConnectionEvaluation",
     "ConstrainedField",
     "ConstraintType",
+    "DisruptionInjectorService",
     "EliminationRecord",
     "EventService",
     "EventType",

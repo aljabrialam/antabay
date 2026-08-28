@@ -14,3 +14,4 @@ class InboundNotification:
     journey_id: str | None
     associated: bool
     confirmation_triggered: bool
+    simulated: bool = False

@@ -94,3 +94,25 @@ class UnregisteredActionTypeError(Exception):
     def __init__(self, action_type: str) -> None:
         super().__init__(f"No SuccessCondition registered for action_type: {action_type!r}")
         self.action_type = action_type
+
+
+class JourneyNotFoundError(Exception):
+    """Raised when an injection targets a journey_id that does not
+    correspond to any existing journey (spec 008, research.md R6)."""
+
+    def __init__(self, journey_id: str) -> None:
+        super().__init__(f"No journey found: {journey_id!r}")
+        self.journey_id = journey_id
+
+
+class JourneyHasNoOrderError(Exception):
+    """Raised when an injection targets a real journey with no order
+    carrying a real order_no yet (spec 008, FR-005, research.md R6)."""
+
+    def __init__(self, journey_id: str) -> None:
+        super().__init__(f"Journey {journey_id!r} has no real order to reference")
+        self.journey_id = journey_id
+
+
+class InjectorDisabledError(Exception):
+    """Raised when the disruption injector is disabled (spec 008, FR-008)."""

@@ -618,6 +618,10 @@ class JourneyRepository:
             budget_after=row["budget_after"],
         )
 
+    # ------------------------------------------------------------------
+    # Booking persistence methods (005-booking-path)
+    # ------------------------------------------------------------------
+
     def save_order(self, order: "Order") -> None:
         with get_connection() as conn:
             conn.execute(
@@ -855,6 +859,7 @@ class JourneyRepository:
                     journey_id=notification.journey_id,
                     associated=1 if notification.associated else 0,
                     confirmation_triggered=1 if notification.confirmation_triggered else 0,
+                    simulated=1 if notification.simulated else 0,
                 )
             )
             conn.commit()
@@ -871,6 +876,7 @@ class JourneyRepository:
             journey_id=row["journey_id"],
             associated=bool(row["associated"]),
             confirmation_triggered=bool(row["confirmation_triggered"]),
+            simulated=bool(row["simulated"]),
         )
 
     def get_notifications_for_order(self, order_reference: str) -> list["InboundNotification"]:
@@ -913,6 +919,24 @@ class JourneyRepository:
             seen.add(row["journey_id"])
             result.append((row["journey_id"], row["order_no"]))
         return result
+
+    def get_order_no_for_journey(self, journey_id: str) -> str | None:
+        """Returns the most recent real order_no for this journey, or None
+        if it has no order with a real order_no yet (spec 008, FR-005)."""
+        with get_connection() as conn:
+            row = (
+                conn.execute(
+                    select(orders.c.order_no)
+                    .where(
+                        orders.c.journey_id == journey_id,
+                        orders.c.order_no.isnot(None),
+                    )
+                    .order_by(orders.c.requested_at.desc())
+                )
+                .mappings()
+                .first()
+            )
+        return row["order_no"] if row is not None else None
 
     # ------------------------------------------------------------------
     # Scoring persistence methods (003-option-scoring)

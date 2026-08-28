@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI
 
+from journey.api.routers.disruption_injector import router as disruption_injector_router
 from journey.api.routers.events import router as events_router
 from journey.api.routers.webhooks import router as webhooks_router
 from journey.services.webhook_service import WebhookService
@@ -41,6 +42,7 @@ app = FastAPI(title="Antabay Journey API", version="0.1.0", lifespan=lifespan)
 
 app.include_router(events_router)
 app.include_router(webhooks_router)
+app.include_router(disruption_injector_router)
 
 
 @app.get("/health")

@@ -232,4 +232,5 @@ webhook_notifications = Table(
     Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=True),
     Column("associated", Integer, nullable=False, default=0),   # 0/1 — explicit, not merely journey_id is not null
     Column("confirmation_triggered", Integer, nullable=False, default=0),  # 0/1
+    Column("simulated", Integer, nullable=False, default=0),    # 0/1 — set only by the disruption injector (008)
 )
