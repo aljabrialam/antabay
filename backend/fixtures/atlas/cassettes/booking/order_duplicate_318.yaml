@@ -1,0 +1,38 @@
+interactions:
+- request:
+    body: '{"cid":"<REDACTED>","sessionId":"<REDACTED>","passengers":[{"name":"TEST/ONE","passengerType":0,"birthday":"19900101","gender":"M","nationality":"ID","cardNum":"A12345678","cardType":"PP","cardExpired":"20301231"}],"contact":{"name":"TEST/ONE","email":"test@example.com","mobile":"0062-8123456789"},"requestSource":"antabay"}'
+    headers:
+      Accept:
+      - application/json
+      Content-Type:
+      - application/json
+    method: POST
+    uri: https://sandbox.atriptech.com/order.do
+  response:
+    body:
+      string: '{"orderNo":null,"pnrCode":null,"totalPrice":null,"totalTransactionFee":null,"currency":null,"vendorTotalPrice":null,"vendorCurrency":null,"tktLimitTime":null,"paxTicketInfos":null,"routing":null,"sessionId":null,"offerId":null,"originalOrderNo":null,"ticketOrderNo":null,"includeExtraBaggage":null,"paymentOptions":null,"duplicateOrders":["TESTA20260815172246746"],"status":318,"msg":null}'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"cid":"<REDACTED>","orderNo":"TESTA20260815172246746","requestSource":"antabay"}'
+    headers:
+      Accept:
+      - application/json
+      Content-Type:
+      - application/json
+    method: POST
+    uri: https://sandbox.atriptech.com/queryOrderDetails.do
+  response:
+    body:
+      string: '{"orderStatus":"2","ticketStatus":"1","paxTicketInfos":[{"name":"TEST/ONE","ticketNos":["S46659"],"airlinePNRs":["S46659"]}],"payTime":"2026-08-15T17:23:10Z","createdTime":"2026-08-15T17:22:46Z","updatedTime":"2026-08-15T17:23:46Z","tktLimitTime":"2026-08-15T17:52:46Z","vccStatus":null,"paymentAttempted":true,"errorCode":null,"errorMessage":null,"ifSeatOccupied":false,"itineraryDownload":null,"refundRules":null,"airlineBookings":null,"airlineMessage":null}'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

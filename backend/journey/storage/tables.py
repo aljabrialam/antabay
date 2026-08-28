@@ -160,3 +160,46 @@ verifications = Table(
     Column("budget_before", Integer, nullable=False),
     Column("budget_after", Integer, nullable=False),
 )
+
+orders = Table(
+    "orders",
+    metadata,
+    Column("order_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("option_id", String, ForeignKey("flight_options.option_id"), nullable=False),
+    Column("requested_at", String, nullable=False),           # ISO-8601 UTC
+    Column("responded_at", String, nullable=True),            # null only on UNCERTAIN (no response received)
+    Column("raw_response_json", Text, nullable=True),         # null only alongside responded_at
+    Column("outcome", String, nullable=False),                 # CREATED | DUPLICATE_REJECTED | UNCERTAIN | ERROR
+    Column("order_no", String, nullable=True),                 # set on CREATED, or after DUPLICATE_REJECTED resolution
+    Column("booking_reference", String, nullable=True),        # pnrCode; set only on CREATED
+    Column("ticketing_deadline", String, nullable=True),       # tktLimitTime, ISO-8601 UTC; set only on CREATED
+    Column("session_id_used", String, nullable=False),         # the sessionId sent, recorded for audit
+)
+
+payments = Table(
+    "payments",
+    metadata,
+    Column("payment_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("order_no", String, nullable=False),
+    Column("requested_at", String, nullable=False),           # ISO-8601 UTC
+    Column("responded_at", String, nullable=True),            # null only on UNCERTAIN
+    Column("raw_response_json", Text, nullable=True),         # null only alongside responded_at
+    Column("outcome", String, nullable=False),                 # SUCCESS | DECLINED | UNCERTAIN | ERROR
+)
+
+ticketing_queries = Table(
+    "ticketing_queries",
+    metadata,
+    Column("query_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("order_no", String, nullable=False),
+    Column("queried_at", String, nullable=False),              # ISO-8601 UTC
+    Column("raw_response_json", Text, nullable=False),
+    Column("order_status", String, nullable=True),             # audit only — never used to confirm ticketing
+    Column("ticket_status", String, nullable=True),            # audit only — never used to confirm ticketing
+    Column("passenger_ticket_numbers_json", Text, nullable=False),  # list[list[str]], one per passenger
+    Column("confirmed", Integer, nullable=False, default=0),   # 0/1 — True only if every passenger has ticket numbers
+    Column("is_terminal_error", Integer, nullable=False, default=0),  # 0/1 — True if errorCode was non-null
+)

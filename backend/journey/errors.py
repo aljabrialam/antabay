@@ -53,3 +53,35 @@ class OptionUnavailableError(Exception):
     def __init__(self, option_id: str) -> None:
         super().__init__(f"Option no longer available: {option_id}")
         self.option_id = option_id
+
+
+class SessionExpiredError(Exception):
+    """Raised when order creation is attempted against an already-expired session (FR-014)."""
+
+    def __init__(self, journey_id: str) -> None:
+        super().__init__(f"Session already expired for journey {journey_id!r}; refusing to create order")
+        self.journey_id = journey_id
+
+
+class DuplicateOrderAnomalyError(Exception):
+    """Raised when a duplicate-order rejection carries more than one existing order reference (FR-006, research.md R8)."""
+
+    def __init__(self, duplicate_orders: list[str]) -> None:
+        super().__init__(f"Expected exactly one duplicate order reference, got: {duplicate_orders}")
+        self.duplicate_orders = duplicate_orders
+
+
+class PaymentDeclinedError(Exception):
+    """Raised when payment is attempted again for an order that was already declined (FR-013)."""
+
+    def __init__(self, order_no: str) -> None:
+        super().__init__(f"Payment already declined for order {order_no!r}; not retrying")
+        self.order_no = order_no
+
+
+class OrderNotFoundError(Exception):
+    """Raised when payment is attempted for a journey with no successfully created order (FR-008)."""
+
+    def __init__(self, order_no: str) -> None:
+        super().__init__(f"No successfully created order found: {order_no!r}")
+        self.order_no = order_no

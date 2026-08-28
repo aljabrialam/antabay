@@ -28,12 +28,14 @@ from journey.models.scoring import (
     ScoringOutcome,
     ScoringRun,
 )
+from journey.models.booking import Order, OrderOutcome, PaymentAttempt, PaymentOutcome, TicketingQuery
 from journey.models.verification import (
     PassengerRequirementField,
     PriceChange,
     VerificationOutcome,
     VerificationResult,
 )
+from journey.services.booking_service import BookingService
 from journey.services.event_service import EventService
 from journey.services.journey_service import JourneyService
 from journey.services.objective_parser import ObjectiveParser
@@ -43,6 +45,7 @@ from journey.services.verification_service import VerificationService
 
 __all__ = [
     "AuditEntry",
+    "BookingService",
     "ConnectionEvaluation",
     "ConstrainedField",
     "ConstraintType",
@@ -62,8 +65,12 @@ __all__ = [
     "JourneyStateService",
     "NoSatisfyingOptionReport",
     "ObjectiveParser",
+    "Order",
+    "OrderOutcome",
     "ParseResult",
     "PassengerRequirementField",
+    "PaymentAttempt",
+    "PaymentOutcome",
     "PriceChange",
     "Rationale",
     "RejectionReason",
@@ -71,6 +78,7 @@ __all__ = [
     "ScoringOutcome",
     "ScoringRun",
     "ScoringService",
+    "TicketingQuery",
     "TravelObjective",
     "VerificationOutcome",
     "VerificationResult",

@@ -14,6 +14,9 @@ class JourneyState(str, Enum):
     # VERIFIED: a verify.do call has succeeded (with or without a reported
     # price change) for the journey's currently held option (spec 004).
     VERIFIED = "VERIFIED"
+    # MONITORING: ticketing has been independently confirmed — every
+    # passenger has non-empty ticket numbers (spec 005).
+    MONITORING = "MONITORING"
     CANCELLED = "CANCELLED"
     ABANDONED = "ABANDONED"
 
@@ -41,6 +44,12 @@ _ALLOWED_TRANSITIONS: dict[JourneyState, set[JourneyState]] = {
     JourneyState.VERIFIED: {
         # FR-009 (004): an unavailable re-verification sends the journey back to search.
         JourneyState.SEARCHING,
+        # FR-012 (005): ticketing confirmed — every passenger has ticket numbers.
+        JourneyState.MONITORING,
+        JourneyState.CANCELLED,
+        JourneyState.ABANDONED,
+    },
+    JourneyState.MONITORING: {
         JourneyState.CANCELLED,
         JourneyState.ABANDONED,
     },

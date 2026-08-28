@@ -42,12 +42,16 @@ from journey.storage.tables import (
     journey_events,
     journeys,
     legs,
+    orders,
+    payments,
     scoring_runs,
     search_records,
+    ticketing_queries,
     verifications,
 )
 
 if TYPE_CHECKING:
+    from journey.models.booking import Order, PaymentAttempt, TicketingQuery
     from journey.models.verification import VerificationResult
 
 
@@ -609,6 +613,152 @@ class JourneyRepository:
             budget_before=row["budget_before"],
             budget_after=row["budget_after"],
         )
+
+    def save_order(self, order: "Order") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(orders).values(
+                    order_id=order.order_id,
+                    journey_id=order.journey_id,
+                    option_id=order.option_id,
+                    requested_at=order.requested_at.isoformat(),
+                    responded_at=order.responded_at.isoformat() if order.responded_at else None,
+                    raw_response_json=order.raw_response_json,
+                    outcome=order.outcome.value,
+                    order_no=order.order_no,
+                    booking_reference=order.booking_reference,
+                    ticketing_deadline=order.ticketing_deadline.isoformat() if order.ticketing_deadline else None,
+                    session_id_used=order.session_id_used,
+                )
+            )
+            conn.commit()
+
+    def _row_to_order(self, row: Any) -> "Order":
+        from journey.models.booking import Order, OrderOutcome
+
+        return Order(
+            order_id=row["order_id"],
+            journey_id=row["journey_id"],
+            option_id=row["option_id"],
+            requested_at=datetime.fromisoformat(row["requested_at"]),
+            responded_at=datetime.fromisoformat(row["responded_at"]) if row["responded_at"] else None,
+            raw_response_json=row["raw_response_json"],
+            outcome=OrderOutcome(row["outcome"]),
+            order_no=row["order_no"],
+            booking_reference=row["booking_reference"],
+            ticketing_deadline=datetime.fromisoformat(row["ticketing_deadline"]) if row["ticketing_deadline"] else None,
+            session_id_used=row["session_id_used"],
+        )
+
+    def get_order_by_order_no(self, order_no: str) -> "Order | None":
+        with get_connection() as conn:
+            row = (
+                conn.execute(select(orders).where(orders.c.order_no == order_no))
+                .mappings()
+                .first()
+            )
+        return self._row_to_order(row) if row is not None else None
+
+    def get_latest_order(self, journey_id: str, option_id: str) -> "Order | None":
+        with get_connection() as conn:
+            row = (
+                conn.execute(
+                    select(orders)
+                    .where(orders.c.journey_id == journey_id, orders.c.option_id == option_id)
+                    .order_by(orders.c.requested_at.desc())
+                )
+                .mappings()
+                .first()
+            )
+        return self._row_to_order(row) if row is not None else None
+
+    def save_payment(self, payment: "PaymentAttempt") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(payments).values(
+                    payment_id=payment.payment_id,
+                    journey_id=payment.journey_id,
+                    order_no=payment.order_no,
+                    requested_at=payment.requested_at.isoformat(),
+                    responded_at=payment.responded_at.isoformat() if payment.responded_at else None,
+                    raw_response_json=payment.raw_response_json,
+                    outcome=payment.outcome.value,
+                )
+            )
+            conn.commit()
+
+    def get_declined_payment(self, order_no: str) -> "PaymentAttempt | None":
+        from journey.models.booking import PaymentAttempt, PaymentOutcome
+
+        with get_connection() as conn:
+            row = (
+                conn.execute(
+                    select(payments).where(
+                        payments.c.order_no == order_no,
+                        payments.c.outcome == PaymentOutcome.DECLINED.value,
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            return None
+        return PaymentAttempt(
+            payment_id=row["payment_id"],
+            journey_id=row["journey_id"],
+            order_no=row["order_no"],
+            requested_at=datetime.fromisoformat(row["requested_at"]),
+            responded_at=datetime.fromisoformat(row["responded_at"]) if row["responded_at"] else None,
+            raw_response_json=row["raw_response_json"],
+            outcome=PaymentOutcome(row["outcome"]),
+        )
+
+    def save_ticketing_query(self, query: "TicketingQuery") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(ticketing_queries).values(
+                    query_id=query.query_id,
+                    journey_id=query.journey_id,
+                    order_no=query.order_no,
+                    queried_at=query.queried_at.isoformat(),
+                    raw_response_json=query.raw_response_json,
+                    order_status=query.order_status,
+                    ticket_status=query.ticket_status,
+                    passenger_ticket_numbers_json=json.dumps(query.passenger_ticket_numbers),
+                    confirmed=1 if query.confirmed else 0,
+                    is_terminal_error=1 if query.is_terminal_error else 0,
+                )
+            )
+            conn.commit()
+
+    def get_ticketing_queries(self, order_no: str) -> list["TicketingQuery"]:
+        from journey.models.booking import TicketingQuery
+
+        with get_connection() as conn:
+            rows = (
+                conn.execute(
+                    select(ticketing_queries)
+                    .where(ticketing_queries.c.order_no == order_no)
+                    .order_by(ticketing_queries.c.queried_at)
+                )
+                .mappings()
+                .all()
+            )
+        return [
+            TicketingQuery(
+                query_id=r["query_id"],
+                journey_id=r["journey_id"],
+                order_no=r["order_no"],
+                queried_at=datetime.fromisoformat(r["queried_at"]),
+                raw_response_json=r["raw_response_json"],
+                order_status=r["order_status"],
+                ticket_status=r["ticket_status"],
+                passenger_ticket_numbers=json.loads(r["passenger_ticket_numbers_json"]),
+                confirmed=bool(r["confirmed"]),
+                is_terminal_error=bool(r["is_terminal_error"]),
+            )
+            for r in rows
+        ]
 
     # ------------------------------------------------------------------
     # Scoring persistence methods (003-option-scoring)
