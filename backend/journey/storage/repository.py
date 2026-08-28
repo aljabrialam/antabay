@@ -49,12 +49,14 @@ from journey.storage.tables import (
     ticketing_queries,
     verification_attempts,
     verifications,
+    webhook_notifications,
 )
 
 if TYPE_CHECKING:
     from journey.models.booking import Order, PaymentAttempt, TicketingQuery
     from journey.models.verification import VerificationResult
     from journey.models.verification_gate import VerificationAttempt
+    from journey.models.webhook import InboundNotification
 
 
 class JourneyRepository:
@@ -836,6 +838,81 @@ class JourneyRepository:
                 .first()
             )
         return self._row_to_verification_attempt(row) if row is not None else None
+
+    # ------------------------------------------------------------------
+    # Webhook notification persistence (007-webhook-receiver)
+    # ------------------------------------------------------------------
+
+    def save_notification(self, notification: "InboundNotification") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(webhook_notifications).values(
+                    notification_id=notification.notification_id,
+                    received_at=notification.received_at.isoformat(),
+                    declared_event_type=notification.declared_event_type,
+                    order_reference=notification.order_reference,
+                    raw_payload_json=notification.raw_payload_json,
+                    journey_id=notification.journey_id,
+                    associated=1 if notification.associated else 0,
+                    confirmation_triggered=1 if notification.confirmation_triggered else 0,
+                )
+            )
+            conn.commit()
+
+    def _row_to_notification(self, row: Any) -> "InboundNotification":
+        from journey.models.webhook import InboundNotification
+
+        return InboundNotification(
+            notification_id=row["notification_id"],
+            received_at=datetime.fromisoformat(row["received_at"]),
+            declared_event_type=row["declared_event_type"],
+            order_reference=row["order_reference"],
+            raw_payload_json=row["raw_payload_json"],
+            journey_id=row["journey_id"],
+            associated=bool(row["associated"]),
+            confirmation_triggered=bool(row["confirmation_triggered"]),
+        )
+
+    def get_notifications_for_order(self, order_reference: str) -> list["InboundNotification"]:
+        with get_connection() as conn:
+            rows = (
+                conn.execute(
+                    select(webhook_notifications)
+                    .where(webhook_notifications.c.order_reference == order_reference)
+                    .order_by(webhook_notifications.c.received_at)
+                )
+                .mappings()
+                .all()
+            )
+        return [self._row_to_notification(r) for r in rows]
+
+    def get_active_journeys_with_order_reference(self) -> list[tuple[str, str]]:
+        """Returns (journey_id, order_no) for non-terminal journeys with a
+        known order reference — one pair per journey, using its most
+        recently requested order (FR-010)."""
+        terminal = {JourneyState.CANCELLED.value, JourneyState.ABANDONED.value}
+        with get_connection() as conn:
+            rows = (
+                conn.execute(
+                    select(journeys.c.journey_id, orders.c.order_no, orders.c.requested_at)
+                    .select_from(journeys.join(orders, journeys.c.journey_id == orders.c.journey_id))
+                    .where(
+                        journeys.c.state.notin_(terminal),
+                        orders.c.order_no.isnot(None),
+                    )
+                    .order_by(orders.c.requested_at.desc())
+                )
+                .mappings()
+                .all()
+            )
+        seen: set[str] = set()
+        result: list[tuple[str, str]] = []
+        for row in rows:
+            if row["journey_id"] in seen:
+                continue
+            seen.add(row["journey_id"])
+            result.append((row["journey_id"], row["order_no"]))
+        return result
 
     # ------------------------------------------------------------------
     # Scoring persistence methods (003-option-scoring)

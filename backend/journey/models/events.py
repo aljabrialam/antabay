@@ -21,6 +21,7 @@ class EventType(str, Enum):
     AUTHORISATION_REQUESTED = "authorisation_requested"
     AUTHORISATION_OUTCOME = "authorisation_outcome"
     AUTHORISATION_VOIDED = "authorisation_voided"
+    WAKE_REQUESTED = "wake_requested"
     OPTION_REJECTED = "option_rejected"
     OBJECTIVE_VIOLATED = "objective_violated"
     OBJECTIVE_SET = "objective_set"
@@ -80,6 +81,12 @@ class AuthorisationVoidedPayload(BaseModel):
     current_cost: str
 
 
+class WakeRequestedPayload(BaseModel):
+    order_reference: str
+    declared_event_type: str
+    classification: Literal["SUCCESS", "FAILURE"]
+
+
 class AuthorisationOutcomePayload(BaseModel):
     request_id: str
     outcome: Literal["approved", "refused"]
@@ -121,6 +128,7 @@ _PAYLOAD_MODELS: dict[EventType, type[BaseModel]] = {
     EventType.AUTHORISATION_REQUESTED: AuthorisationRequestedPayload,
     EventType.AUTHORISATION_OUTCOME: AuthorisationOutcomePayload,
     EventType.AUTHORISATION_VOIDED: AuthorisationVoidedPayload,
+    EventType.WAKE_REQUESTED: WakeRequestedPayload,
     EventType.OPTION_REJECTED: OptionRejectedPayload,
     EventType.OBJECTIVE_VIOLATED: ObjectiveViolatedPayload,
     EventType.OBJECTIVE_SET: ObjectiveSetPayload,

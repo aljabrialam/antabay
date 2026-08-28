@@ -47,6 +47,7 @@ from journey.models.verification_gate import (
 from journey.models.verification_gate import (
     VerificationOutcome as GateVerificationOutcome,
 )
+from journey.models.webhook import InboundNotification
 from journey.services.authorisation_policy_engine import AuthorisationPolicyEngine
 from journey.services.booking_service import BookingService
 from journey.services.conditions.ticketing_condition import TicketingSuccessCondition
@@ -57,6 +58,7 @@ from journey.services.scoring_service import ScoringService
 from journey.services.state_service import IdentifierNotFoundError, JourneyStateService
 from journey.services.verification_gate import PostActionVerifier
 from journey.services.verification_service import VerificationService
+from journey.services.webhook_service import WebhookService
 
 __all__ = [
     "AuditEntry",
@@ -74,6 +76,7 @@ __all__ = [
     "HeldIdentifier",
     "IdentifierFreshness",
     "IdentifierNotFoundError",
+    "InboundNotification",
     "InvalidTransitionError",
     "JourneyDisplay",
     "JourneyEvent",
@@ -107,5 +110,6 @@ __all__ = [
     "VerificationOutcome",
     "VerificationResult",
     "VerificationService",
+    "WebhookService",
 ]
 

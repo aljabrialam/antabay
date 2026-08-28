@@ -220,3 +220,16 @@ verification_attempts = Table(
     Column("has_discrepancy", Integer, nullable=False, default=0),   # 0/1
     Column("applied_to_state", Integer, nullable=False, default=0),  # 0/1
 )
+
+webhook_notifications = Table(
+    "webhook_notifications",
+    metadata,
+    Column("notification_id", String, primary_key=True),
+    Column("received_at", String, nullable=False),              # ISO-8601 UTC
+    Column("declared_event_type", String, nullable=False),      # raw `type` field; "" if malformed/absent
+    Column("order_reference", String, nullable=True),           # raw order reference; None if absent/malformed
+    Column("raw_payload_json", Text, nullable=False),           # exact, unmodified body (FR-002)
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=True),
+    Column("associated", Integer, nullable=False, default=0),   # 0/1 — explicit, not merely journey_id is not null
+    Column("confirmation_triggered", Integer, nullable=False, default=0),  # 0/1
+)
