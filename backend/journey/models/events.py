@@ -20,6 +20,7 @@ class EventType(str, Enum):
     CALL_BUDGET_UPDATED = "call_budget_updated"
     AUTHORISATION_REQUESTED = "authorisation_requested"
     AUTHORISATION_OUTCOME = "authorisation_outcome"
+    AUTHORISATION_VOIDED = "authorisation_voided"
     OPTION_REJECTED = "option_rejected"
     OBJECTIVE_VIOLATED = "objective_violated"
     OBJECTIVE_SET = "objective_set"
@@ -69,6 +70,14 @@ class AuthorisationRequestedPayload(BaseModel):
     cost: str
     objective_effect: str
     rule_id: str
+    action_id: str | None = None
+    cost_amount: str | None = None
+
+
+class AuthorisationVoidedPayload(BaseModel):
+    request_id: str
+    granted_cost: str
+    current_cost: str
 
 
 class AuthorisationOutcomePayload(BaseModel):
@@ -111,6 +120,7 @@ _PAYLOAD_MODELS: dict[EventType, type[BaseModel]] = {
     EventType.CALL_BUDGET_UPDATED: CallBudgetUpdatedPayload,
     EventType.AUTHORISATION_REQUESTED: AuthorisationRequestedPayload,
     EventType.AUTHORISATION_OUTCOME: AuthorisationOutcomePayload,
+    EventType.AUTHORISATION_VOIDED: AuthorisationVoidedPayload,
     EventType.OPTION_REJECTED: OptionRejectedPayload,
     EventType.OBJECTIVE_VIOLATED: ObjectiveViolatedPayload,
     EventType.OBJECTIVE_SET: ObjectiveSetPayload,

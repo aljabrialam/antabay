@@ -1,3 +1,8 @@
+from journey.models.authorisation_policy import (
+    AuthorisationDecision,
+    ProposedAction,
+    Rule,
+)
 from journey.models.events import (
     EventType,
     JourneyEvent,
@@ -42,6 +47,7 @@ from journey.models.verification_gate import (
 from journey.models.verification_gate import (
     VerificationOutcome as GateVerificationOutcome,
 )
+from journey.services.authorisation_policy_engine import AuthorisationPolicyEngine
 from journey.services.booking_service import BookingService
 from journey.services.conditions.ticketing_condition import TicketingSuccessCondition
 from journey.services.event_service import EventService
@@ -54,6 +60,8 @@ from journey.services.verification_service import VerificationService
 
 __all__ = [
     "AuditEntry",
+    "AuthorisationDecision",
+    "AuthorisationPolicyEngine",
     "BookingService",
     "ConditionResult",
     "ConnectionEvaluation",
@@ -84,8 +92,10 @@ __all__ = [
     "PaymentOutcome",
     "PostActionVerifier",
     "PriceChange",
+    "ProposedAction",
     "Rationale",
     "RejectionReason",
+    "Rule",
     "ScoredOption",
     "ScoringOutcome",
     "ScoringRun",
