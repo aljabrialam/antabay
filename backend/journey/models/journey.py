@@ -11,6 +11,9 @@ class JourneyState(str, Enum):
     OBJECTIVE_CONFIRMED = "OBJECTIVE_CONFIRMED"
     # SEARCHING is reserved for a future feature (option-search capability)
     SEARCHING = "SEARCHING"
+    # VERIFIED: a verify.do call has succeeded (with or without a reported
+    # price change) for the journey's currently held option (spec 004).
+    VERIFIED = "VERIFIED"
     CANCELLED = "CANCELLED"
     ABANDONED = "ABANDONED"
 
@@ -31,6 +34,13 @@ _ALLOWED_TRANSITIONS: dict[JourneyState, set[JourneyState]] = {
         JourneyState.ABANDONED,
     },
     JourneyState.SEARCHING: {
+        JourneyState.VERIFIED,
+        JourneyState.CANCELLED,
+        JourneyState.ABANDONED,
+    },
+    JourneyState.VERIFIED: {
+        # FR-009 (004): an unavailable re-verification sends the journey back to search.
+        JourneyState.SEARCHING,
         JourneyState.CANCELLED,
         JourneyState.ABANDONED,
     },

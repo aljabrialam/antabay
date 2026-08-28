@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/006-agent-trace-console/plan.md`.
+`specs/004-price-verification/plan.md`.
 <!-- SPECKIT END -->

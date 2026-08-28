@@ -1,0 +1,21 @@
+interactions:
+- request:
+    body: '{"routingIdentifier":"<REDACTED>","maxResponseTime":null,"requestSource":"antabay"}'
+    headers:
+      Accept:
+      - application/json
+      Content-Type:
+      - application/json
+    method: POST
+    uri: https://sandbox.atriptech.com/verify.do
+  response:
+    body:
+      string: '{"sessionId":"<REDACTED>","maxSeats":7,"routing":{"fid":"<REDACTED>","routingIdentifier":"<REDACTED>","currency":"USD","adultPrice":66.43,"adultTax":23.96,"transactionFeePerPax":0.0,"fromSegments":[{"segmentIndex":1,"carrier":"ZE","flightNumber":"ZE605","depAirport":"ICN","depTime":"202609050725","arrAirport":"NRT","arrTime":"202609050950","stopCities":"","duration":145,"codeShare":false,"cabinClass":1,"seatCount":7,"aircraftCode":"738","fareFamily":"Discount
+        Fare"}],"retSegments":[],"separateBookings":false,"refreshTime":null,"expireTime":null,"ancillarySupported":["seat","luggage"],"riskSellout":false,"supportCreditTransPayment":"0"},"bookingRequirement":{"passenger":{"name":{"type":"string","required":true,"description":"Passenger full name","maxLength":100},"birthday":{"type":"string","required":true,"description":"Passenger date of birth","maxLength":10},"gender":{"type":"string","required":true,"description":"Passenger gender","maxLength":1},"nationality":{"type":"string","required":true,"description":"Passenger nationality","maxLength":2},"passengerType":{"type":"int","required":true,"description":"0=adult,1=child,2=infant","maxLength":null},"cardNum":{"type":"string","required":false,"description":"Identity/passport card number","maxLength":30},"cardType":{"type":"string","required":false,"description":"Identity card type","maxLength":10},"cardIssuePlace":{"type":"string","required":false,"description":"Card issuing place","maxLength":50},"cardExpired":{"type":"string","required":false,"description":"Card expiry date","maxLength":10}}},"priceChange":{"isPriceChange":false,"originalAdultPrice":66.43,"newAdultPrice":66.43,"originalAdultTax":23.96,"newAdultTax":23.96,"originalChildPrice":null,"newChildPrice":null,"originalInfantPrice":null,"newInfantPrice":null},"status":0,"msg":"success","requestId":null,"clientRequestId":null}'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

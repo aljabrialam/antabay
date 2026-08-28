@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.engine import Connection
@@ -43,7 +44,11 @@ from journey.storage.tables import (
     legs,
     scoring_runs,
     search_records,
+    verifications,
 )
+
+if TYPE_CHECKING:
+    from journey.models.verification import VerificationResult
 
 
 class JourneyRepository:
@@ -424,6 +429,186 @@ class JourneyRepository:
                     )
                 )
         return result
+
+    def get_flight_option(self, option_id: str) -> FlightOption | None:
+        """Return a single FlightOption (with legs) by option_id, or None if unknown."""
+        with get_connection() as conn:
+            row = conn.execute(
+                select(flight_options).where(flight_options.c.option_id == option_id)
+            ).mappings().first()
+            if row is None:
+                return None
+
+            leg_rows = conn.execute(
+                select(legs)
+                .where(legs.c.option_id == option_id)
+                .order_by(legs.c.segment_index)
+            ).mappings().all()
+
+        leg_list = [
+            Leg(
+                leg_id=lr["leg_id"],
+                option_id=lr["option_id"],
+                segment_index=lr["segment_index"],
+                carrier=lr["carrier"],
+                flight_number=lr["flight_number"],
+                dep_airport=lr["dep_airport"],
+                dep_time=lr["dep_time"],
+                arr_airport=lr["arr_airport"],
+                arr_time=lr["arr_time"],
+                duration_minutes=lr["duration_minutes"],
+                stop_cities=lr["stop_cities"],
+                cabin_class=lr["cabin_class"],
+                seat_count=lr["seat_count"],
+                risk_sellout=bool(lr["risk_sellout"]),
+                code_share=bool(lr["code_share"]),
+                aircraft_code=lr["aircraft_code"],
+                fare_family=lr["fare_family"],
+            )
+            for lr in leg_rows
+        ]
+
+        return FlightOption(
+            option_id=row["option_id"],
+            journey_id=row["journey_id"],
+            search_record_id=row["search_record_id"],
+            fid=row["fid"],
+            routing_identifier=row["routing_identifier"],
+            currency=row["currency"],
+            adult_price=Decimal(row["adult_price"]),
+            adult_tax=Decimal(row["adult_tax"]),
+            transaction_fee=Decimal(row["transaction_fee"]),
+            refreshed_at=datetime.fromisoformat(row["refreshed_at"]) if row["refreshed_at"] else None,
+            expire_at=datetime.fromisoformat(row["expire_at"]) if row["expire_at"] else None,
+            is_multi_leg=bool(row["is_multi_leg"]),
+            separate_bookings=bool(row["separate_bookings"]),
+            legs=leg_list,
+            recorded_at=datetime.fromisoformat(row["recorded_at"]),
+        )
+
+    # ------------------------------------------------------------------
+    # Verification persistence methods (004-price-verification)
+    # ------------------------------------------------------------------
+
+    def save_verification(self, result: VerificationResult) -> None:
+        from journey.models.verification import PriceChange, PassengerRequirementField
+
+        price_change_json = None
+        if result.price_change is not None:
+            pc = result.price_change
+            price_change_json = json.dumps(
+                {
+                    "is_price_change": pc.is_price_change,
+                    "original_adult_price": str(pc.original_adult_price),
+                    "new_adult_price": str(pc.new_adult_price),
+                    "original_adult_tax": str(pc.original_adult_tax),
+                    "new_adult_tax": str(pc.new_adult_tax),
+                    "original_child_price": str(pc.original_child_price) if pc.original_child_price is not None else None,
+                    "new_child_price": str(pc.new_child_price) if pc.new_child_price is not None else None,
+                    "original_infant_price": str(pc.original_infant_price) if pc.original_infant_price is not None else None,
+                    "new_infant_price": str(pc.new_infant_price) if pc.new_infant_price is not None else None,
+                }
+            )
+        passenger_requirements_json = json.dumps(
+            [
+                {
+                    "field_name": f.field_name,
+                    "type": f.type,
+                    "required": f.required,
+                    "description": f.description,
+                    "max_length": f.max_length,
+                }
+                for f in result.passenger_requirements
+            ]
+        )
+        with get_connection() as conn:
+            conn.execute(
+                insert(verifications).values(
+                    verification_id=result.verification_id,
+                    journey_id=result.journey_id,
+                    option_id=result.option_id,
+                    requested_at=result.requested_at.isoformat(),
+                    responded_at=result.responded_at.isoformat(),
+                    raw_response_json=result.raw_response_json,
+                    status_code=result.status_code,
+                    atlas_status=result.atlas_status,
+                    outcome=result.outcome.value,
+                    session_id=result.session_id,
+                    max_seats=result.max_seats,
+                    price_change_json=price_change_json,
+                    passenger_requirements_json=passenger_requirements_json,
+                    budget_before=result.budget_before,
+                    budget_after=result.budget_after,
+                )
+            )
+            conn.commit()
+
+    def get_latest_verification(self, journey_id: str, option_id: str) -> VerificationResult | None:
+        from journey.models.verification import (
+            PassengerRequirementField,
+            PriceChange,
+            VerificationOutcome,
+            VerificationResult,
+        )
+
+        with get_connection() as conn:
+            row = (
+                conn.execute(
+                    select(verifications)
+                    .where(
+                        verifications.c.journey_id == journey_id,
+                        verifications.c.option_id == option_id,
+                    )
+                    .order_by(verifications.c.responded_at.desc())
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            return None
+
+        price_change = None
+        if row["price_change_json"] is not None:
+            pc = json.loads(row["price_change_json"])
+            price_change = PriceChange(
+                is_price_change=pc["is_price_change"],
+                original_adult_price=Decimal(pc["original_adult_price"]),
+                new_adult_price=Decimal(pc["new_adult_price"]),
+                original_adult_tax=Decimal(pc["original_adult_tax"]),
+                new_adult_tax=Decimal(pc["new_adult_tax"]),
+                original_child_price=Decimal(pc["original_child_price"]) if pc["original_child_price"] is not None else None,
+                new_child_price=Decimal(pc["new_child_price"]) if pc["new_child_price"] is not None else None,
+                original_infant_price=Decimal(pc["original_infant_price"]) if pc["original_infant_price"] is not None else None,
+                new_infant_price=Decimal(pc["new_infant_price"]) if pc["new_infant_price"] is not None else None,
+            )
+        passenger_requirements = [
+            PassengerRequirementField(
+                field_name=f["field_name"],
+                type=f["type"],
+                required=f["required"],
+                description=f["description"],
+                max_length=f["max_length"],
+            )
+            for f in json.loads(row["passenger_requirements_json"])
+        ]
+
+        return VerificationResult(
+            verification_id=row["verification_id"],
+            journey_id=row["journey_id"],
+            option_id=row["option_id"],
+            requested_at=datetime.fromisoformat(row["requested_at"]),
+            responded_at=datetime.fromisoformat(row["responded_at"]),
+            raw_response_json=row["raw_response_json"],
+            status_code=row["status_code"],
+            atlas_status=row["atlas_status"],
+            outcome=VerificationOutcome(row["outcome"]),
+            session_id=row["session_id"],
+            max_seats=row["max_seats"],
+            price_change=price_change,
+            passenger_requirements=passenger_requirements,
+            budget_before=row["budget_before"],
+            budget_after=row["budget_after"],
+        )
 
     # ------------------------------------------------------------------
     # Scoring persistence methods (003-option-scoring)

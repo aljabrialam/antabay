@@ -36,3 +36,20 @@ class ScoringRunNotFoundError(Exception):
     def __init__(self, run_id: str) -> None:
         super().__init__(f"ScoringRun not found: {run_id}")
         self.run_id = run_id
+
+
+class AtlasVerifyError(Exception):
+    """Raised when Atlas returns a non-zero status or an unexpected HTTP error from verify.do."""
+
+    def __init__(self, message: str, status_code: int | None = None, atlas_status: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.atlas_status = atlas_status
+
+
+class OptionUnavailableError(Exception):
+    """Raised when verify.do reports the selected option is no longer available."""
+
+    def __init__(self, option_id: str) -> None:
+        super().__init__(f"Option no longer available: {option_id}")
+        self.option_id = option_id

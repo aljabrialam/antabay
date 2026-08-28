@@ -28,11 +28,18 @@ from journey.models.scoring import (
     ScoringOutcome,
     ScoringRun,
 )
+from journey.models.verification import (
+    PassengerRequirementField,
+    PriceChange,
+    VerificationOutcome,
+    VerificationResult,
+)
 from journey.services.event_service import EventService
 from journey.services.journey_service import JourneyService
 from journey.services.objective_parser import ObjectiveParser
 from journey.services.scoring_service import ScoringService
 from journey.services.state_service import IdentifierNotFoundError, JourneyStateService
+from journey.services.verification_service import VerificationService
 
 __all__ = [
     "AuditEntry",
@@ -56,6 +63,8 @@ __all__ = [
     "NoSatisfyingOptionReport",
     "ObjectiveParser",
     "ParseResult",
+    "PassengerRequirementField",
+    "PriceChange",
     "Rationale",
     "RejectionReason",
     "ScoredOption",
@@ -63,5 +72,8 @@ __all__ = [
     "ScoringRun",
     "ScoringService",
     "TravelObjective",
+    "VerificationOutcome",
+    "VerificationResult",
+    "VerificationService",
 ]
 

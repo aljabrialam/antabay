@@ -140,3 +140,23 @@ journey_events = Table(
     Column("recorded_at", String, nullable=False),    # ISO-8601 UTC
     UniqueConstraint("journey_id", "sequence", name="uq_journey_events_journey_sequence"),
 )
+
+verifications = Table(
+    "verifications",
+    metadata,
+    Column("verification_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("option_id", String, ForeignKey("flight_options.option_id"), nullable=False),
+    Column("requested_at", String, nullable=False),          # ISO-8601 UTC
+    Column("responded_at", String, nullable=False),          # ISO-8601 UTC
+    Column("raw_response_json", Text, nullable=False),
+    Column("status_code", Integer, nullable=False),
+    Column("atlas_status", Integer, nullable=True),          # null only if body unparseable
+    Column("outcome", String, nullable=False),                # VERIFIED | PRICE_CHANGED | UNAVAILABLE | RATE_LIMITED | ERROR
+    Column("session_id", String, nullable=True),              # set only on VERIFIED/PRICE_CHANGED
+    Column("max_seats", Integer, nullable=True),               # set only on VERIFIED/PRICE_CHANGED
+    Column("price_change_json", Text, nullable=True),          # JSON-encoded PriceChange, if present
+    Column("passenger_requirements_json", Text, nullable=False),  # JSON-encoded list, may be "[]"
+    Column("budget_before", Integer, nullable=False),
+    Column("budget_after", Integer, nullable=False),
+)
