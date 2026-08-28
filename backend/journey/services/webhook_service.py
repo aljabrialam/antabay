@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
 
-from journey.models.events import EventType
+from journey.models.events import EventType, JourneyEvent
 from journey.models.journey import JourneyState
 from journey.models.verification_gate import VerificationOutcome
 from journey.models.webhook import InboundNotification
@@ -40,6 +41,7 @@ class WebhookService:
         repository: JourneyRepository | None = None,
         http_client: httpx.Client | None = None,
         event_service: EventService | None = None,
+        on_wake: Callable[[str, JourneyEvent], object] | None = None,
     ) -> None:
         self._repo = repository if repository is not None else JourneyRepository()
         self._http = http_client if http_client is not None else httpx.Client()
@@ -47,6 +49,7 @@ class WebhookService:
         self._verifier = PostActionVerifier(
             self._repo, {"ticketing": TicketingSuccessCondition()}
         )
+        self._on_wake = on_wake
 
     def receive(
         self, raw_body: bytes, received_at: datetime, simulated: bool = False
@@ -114,7 +117,7 @@ class WebhookService:
         )
 
         if attempt.classification in (VerificationOutcome.SUCCESS, VerificationOutcome.FAILURE):
-            self._events.append(
+            wake_event = self._events.append(
                 notification.journey_id,
                 EventType.WAKE_REQUESTED,
                 {
@@ -124,6 +127,8 @@ class WebhookService:
                 },
                 simulated=notification.simulated,
             )
+            if self._on_wake is not None:
+                self._on_wake(notification.journey_id, wake_event)
 
     def _extract_claim(self, notification: InboundNotification) -> Any:
         parsed = json.loads(notification.raw_payload_json)
@@ -177,7 +182,7 @@ class WebhookService:
             )
 
             if attempt.classification in (VerificationOutcome.SUCCESS, VerificationOutcome.FAILURE):
-                self._events.append(
+                wake_event = self._events.append(
                     journey_id,
                     EventType.WAKE_REQUESTED,
                     {
@@ -186,3 +191,5 @@ class WebhookService:
                         "classification": attempt.classification.value,
                     },
                 )
+                if self._on_wake is not None:
+                    self._on_wake(journey_id, wake_event)

@@ -10,6 +10,7 @@ from journey.api.routers.disruption_injector import router as disruption_injecto
 from journey.api.routers.events import router as events_router
 from journey.api.routers.webhooks import router as webhooks_router
 from journey.services.webhook_service import WebhookService
+from journey.services.wiring import build_impact_evaluation_service
 from journey.storage.db import get_engine
 from journey.storage.tables import metadata
 
@@ -20,7 +21,8 @@ _RECONCILIATION_INTERVAL_SECONDS = 300
 
 
 async def _reconciliation_loop() -> None:
-    service = WebhookService()
+    impact_evaluation_service = build_impact_evaluation_service()
+    service = WebhookService(on_wake=impact_evaluation_service.evaluate_wake)
     while True:
         await asyncio.sleep(_RECONCILIATION_INTERVAL_SECONDS)
         await asyncio.to_thread(service.reconcile_active_journeys, datetime.now(tz=timezone.utc))

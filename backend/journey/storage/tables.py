@@ -234,3 +234,34 @@ webhook_notifications = Table(
     Column("confirmation_triggered", Integer, nullable=False, default=0),  # 0/1
     Column("simulated", Integer, nullable=False, default=0),    # 0/1 — set only by the disruption injector (008)
 )
+
+impact_evaluations = Table(
+    "impact_evaluations",
+    metadata,
+    Column("evaluation_id", String, primary_key=True),
+    Column("journey_id", String, ForeignKey("journeys.journey_id"), nullable=False),
+    Column("triggering_event_id", String, nullable=False),
+    Column("triggering_sequence", Integer, nullable=False),
+    Column("started_at", String, nullable=False),               # ISO-8601 UTC
+    Column("concluded_at", String, nullable=True),               # ISO-8601 UTC; null while IN_PROGRESS
+    Column("status", String, nullable=False),                    # IN_PROGRESS | COMPLETED | SUPERSEDED | INERT_PAST_DEPARTURE
+    Column("objective_satisfied", Integer, nullable=True),        # 0/1; null for SUPERSEDED/INERT_PAST_DEPARTURE
+    Column("violation_description", Text, nullable=True),
+    Column("violated_constraints_json", Text, nullable=True),    # JSON list[str]
+    Column("violation_extent", String, nullable=True),
+    Column("recommendation_id", String, nullable=True),
+    Column("no_alternative_reason", String, nullable=True),      # none_found | budget_exhausted | all_expired
+)
+
+recommendations = Table(
+    "recommendations",
+    metadata,
+    Column("recommendation_id", String, primary_key=True),
+    Column("evaluation_id", String, ForeignKey("impact_evaluations.evaluation_id"), nullable=False),
+    Column("option_id", String, ForeignKey("flight_options.option_id"), nullable=False),
+    Column("verification_id", String, ForeignKey("verifications.verification_id"), nullable=False),
+    Column("cost_relative_description", String, nullable=False),
+    Column("rationale", Text, nullable=False),
+    Column("constraint_breach", Integer, nullable=False, default=0),  # 0/1
+    Column("constraint_breach_detail", Text, nullable=True),
+)

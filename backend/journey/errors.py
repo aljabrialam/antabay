@@ -116,3 +116,12 @@ class JourneyHasNoOrderError(Exception):
 
 class InjectorDisabledError(Exception):
     """Raised when the disruption injector is disabled (spec 008, FR-008)."""
+
+
+class NoOrderReferenceForJourneyError(Exception):
+    """Raised when impact evaluation is invoked for a journey with no order
+    reference to look up notifications against (spec 009, data-model.md)."""
+
+    def __init__(self, journey_id: str) -> None:
+        super().__init__(f"No order reference found for journey {journey_id!r}")
+        self.journey_id = journey_id

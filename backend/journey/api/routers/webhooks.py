@@ -5,12 +5,14 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 
 from journey.services.webhook_service import WebhookService
+from journey.services.wiring import build_impact_evaluation_service
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 
 def get_webhook_service() -> WebhookService:
-    return WebhookService()
+    impact_evaluation_service = build_impact_evaluation_service()
+    return WebhookService(on_wake=impact_evaluation_service.evaluate_wake)
 
 
 @router.post("/atlas")

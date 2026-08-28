@@ -27,6 +27,10 @@ class EventType(str, Enum):
     OBJECTIVE_SET = "objective_set"
     REPLAY_STARTED = "replay_started"
     REPLAY_ENDED = "replay_ended"
+    IMPACT_EVALUATION_SATISFIED = "impact_evaluation_satisfied"
+    ALTERNATIVE_RECOMMENDED = "alternative_recommended"
+    NO_ALTERNATIVE_FOUND = "no_alternative_found"
+    IMPACT_EVALUATION_SUPERSEDED = "impact_evaluation_superseded"
 
 
 class ObjectiveConstraint(BaseModel):
@@ -118,6 +122,29 @@ class ReplayEndedPayload(BaseModel):
     pass
 
 
+class ImpactEvaluationSatisfiedPayload(BaseModel):
+    evaluation_id: str
+
+
+class AlternativeRecommendedPayload(BaseModel):
+    evaluation_id: str
+    recommendation_id: str
+    option_id: str
+    cost_relative_description: str
+    rationale: str
+    constraint_breach: bool
+    constraint_breach_detail: str | None = None
+
+
+class NoAlternativeFoundPayload(BaseModel):
+    evaluation_id: str
+
+
+class ImpactEvaluationSupersededPayload(BaseModel):
+    evaluation_id: str
+    superseded_by_event_id: str
+
+
 _PAYLOAD_MODELS: dict[EventType, type[BaseModel]] = {
     EventType.EXTERNAL_CALL: ExternalCallPayload,
     EventType.DECISION: DecisionPayload,
@@ -134,6 +161,10 @@ _PAYLOAD_MODELS: dict[EventType, type[BaseModel]] = {
     EventType.OBJECTIVE_SET: ObjectiveSetPayload,
     EventType.REPLAY_STARTED: ReplayStartedPayload,
     EventType.REPLAY_ENDED: ReplayEndedPayload,
+    EventType.IMPACT_EVALUATION_SATISFIED: ImpactEvaluationSatisfiedPayload,
+    EventType.ALTERNATIVE_RECOMMENDED: AlternativeRecommendedPayload,
+    EventType.NO_ALTERNATIVE_FOUND: NoAlternativeFoundPayload,
+    EventType.IMPACT_EVALUATION_SUPERSEDED: ImpactEvaluationSupersededPayload,
 }
 
 

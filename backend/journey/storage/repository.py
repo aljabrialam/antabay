@@ -39,11 +39,13 @@ from journey.storage.tables import (
     authorisation_outcomes,
     flight_options,
     held_identifiers,
+    impact_evaluations,
     journey_events,
     journeys,
     legs,
     orders,
     payments,
+    recommendations,
     scoring_runs,
     search_records,
     ticketing_queries,
@@ -54,6 +56,7 @@ from journey.storage.tables import (
 
 if TYPE_CHECKING:
     from journey.models.booking import Order, PaymentAttempt, TicketingQuery
+    from journey.models.impact_evaluation import ImpactEvaluation, Recommendation
     from journey.models.verification import VerificationResult
     from journey.models.verification_gate import VerificationAttempt
     from journey.models.webhook import InboundNotification
@@ -1060,6 +1063,136 @@ class JourneyRepository:
                 select(journeys.c.journey_id).where(journeys.c.journey_id == journey_id)
             ).scalar()
         return row is not None
+
+    # ------------------------------------------------------------------
+    # Impact evaluation persistence (009-impact-evaluation)
+    # ------------------------------------------------------------------
+
+    def save_impact_evaluation(self, evaluation: "ImpactEvaluation") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(impact_evaluations).values(**_impact_evaluation_values(evaluation))
+            )
+            conn.commit()
+
+    def update_impact_evaluation(self, evaluation: "ImpactEvaluation") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                update(impact_evaluations)
+                .where(impact_evaluations.c.evaluation_id == evaluation.evaluation_id)
+                .values(**_impact_evaluation_values(evaluation))
+            )
+            conn.commit()
+
+    def get_impact_evaluation(self, evaluation_id: str) -> "ImpactEvaluation":
+        with get_connection() as conn:
+            row = conn.execute(
+                select(impact_evaluations).where(
+                    impact_evaluations.c.evaluation_id == evaluation_id
+                )
+            ).mappings().first()
+        if row is None:
+            raise ValueError(f"ImpactEvaluation not found: {evaluation_id}")
+        return _row_to_impact_evaluation(row)
+
+    def get_latest_impact_evaluation(self, journey_id: str) -> "ImpactEvaluation | None":
+        with get_connection() as conn:
+            row = (
+                conn.execute(
+                    select(impact_evaluations)
+                    .where(impact_evaluations.c.journey_id == journey_id)
+                    .order_by(impact_evaluations.c.started_at.desc())
+                )
+                .mappings()
+                .first()
+            )
+        return _row_to_impact_evaluation(row) if row is not None else None
+
+    def save_recommendation(self, recommendation: "Recommendation") -> None:
+        with get_connection() as conn:
+            conn.execute(
+                insert(recommendations).values(
+                    recommendation_id=recommendation.recommendation_id,
+                    evaluation_id=recommendation.evaluation_id,
+                    option_id=recommendation.option_id,
+                    verification_id=recommendation.verification_id,
+                    cost_relative_description=recommendation.cost_relative_description,
+                    rationale=recommendation.rationale,
+                    constraint_breach=1 if recommendation.constraint_breach else 0,
+                    constraint_breach_detail=recommendation.constraint_breach_detail,
+                )
+            )
+            conn.commit()
+
+    def get_recommendation(self, recommendation_id: str) -> "Recommendation | None":
+        from journey.models.impact_evaluation import Recommendation
+
+        with get_connection() as conn:
+            row = conn.execute(
+                select(recommendations).where(
+                    recommendations.c.recommendation_id == recommendation_id
+                )
+            ).mappings().first()
+        if row is None:
+            return None
+        return Recommendation(
+            recommendation_id=row["recommendation_id"],
+            evaluation_id=row["evaluation_id"],
+            option_id=row["option_id"],
+            verification_id=row["verification_id"],
+            cost_relative_description=row["cost_relative_description"],
+            rationale=row["rationale"],
+            constraint_breach=bool(row["constraint_breach"]),
+            constraint_breach_detail=row["constraint_breach_detail"],
+        )
+
+# ---------------------------------------------------------------------------
+# ImpactEvaluation serialization helpers (009-impact-evaluation)
+# ---------------------------------------------------------------------------
+
+def _impact_evaluation_values(evaluation: "ImpactEvaluation") -> dict[str, Any]:
+    return {
+        "evaluation_id": evaluation.evaluation_id,
+        "journey_id": evaluation.journey_id,
+        "triggering_event_id": evaluation.triggering_event_id,
+        "triggering_sequence": evaluation.triggering_sequence,
+        "started_at": evaluation.started_at.isoformat(),
+        "concluded_at": evaluation.concluded_at.isoformat() if evaluation.concluded_at else None,
+        "status": evaluation.status.value,
+        "objective_satisfied": (
+            None if evaluation.objective_satisfied is None
+            else (1 if evaluation.objective_satisfied else 0)
+        ),
+        "violation_description": evaluation.violation_description,
+        "violated_constraints_json": json.dumps(evaluation.violated_constraints),
+        "violation_extent": evaluation.violation_extent,
+        "recommendation_id": evaluation.recommendation_id,
+        "no_alternative_reason": evaluation.no_alternative_reason,
+    }
+
+
+def _row_to_impact_evaluation(row: Any) -> "ImpactEvaluation":
+    from journey.models.impact_evaluation import EvaluationStatus, ImpactEvaluation
+
+    return ImpactEvaluation(
+        evaluation_id=row["evaluation_id"],
+        journey_id=row["journey_id"],
+        triggering_event_id=row["triggering_event_id"],
+        triggering_sequence=row["triggering_sequence"],
+        started_at=datetime.fromisoformat(row["started_at"]),
+        status=EvaluationStatus(row["status"]),
+        concluded_at=(
+            datetime.fromisoformat(row["concluded_at"]) if row["concluded_at"] else None
+        ),
+        objective_satisfied=(
+            None if row["objective_satisfied"] is None else bool(row["objective_satisfied"])
+        ),
+        violation_description=row["violation_description"],
+        violated_constraints=json.loads(row["violated_constraints_json"] or "[]"),
+        violation_extent=row["violation_extent"],
+        recommendation_id=row["recommendation_id"],
+        no_alternative_reason=row["no_alternative_reason"],
+    )
 
 
 # ---------------------------------------------------------------------------
