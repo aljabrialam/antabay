@@ -170,3 +170,47 @@ class TestStreamEvents:
 
         collected = [e.sequence async for e in service.stream_events(journey_id)]
         assert collected == [1, 2]
+
+
+class TestObjectiveSetPayloadFrom:
+    """T031: TravelObjective -> ObjectiveSetPayload dict conversion (FR-001)."""
+
+    def test_buckets_fields_by_their_own_constraint_type(self) -> None:
+        from decimal import Decimal
+
+        from journey.models.events import objective_set_payload_from
+        from journey.models.objective import ConstrainedField, ConstraintType, TravelObjective
+
+        objective = TravelObjective(
+            origin=ConstrainedField(value="SIN", constraint_type=ConstraintType.HARD),
+            destination=ConstrainedField(value="NRT", constraint_type=ConstraintType.SOFT),
+            budget_amount=ConstrainedField(
+                value=Decimal("120.00"), constraint_type=ConstraintType.HARD
+            ),
+            budget_currency=ConstrainedField(value="USD", constraint_type=ConstraintType.HARD),
+            preferences=ConstrainedField(
+                value=["window seat"], constraint_type=ConstraintType.SOFT
+            ),
+        )
+
+        payload = objective_set_payload_from(objective)
+
+        assert {"field": "origin", "value": "SIN"} in payload["hard_constraints"]
+        assert {"field": "budget", "value": "USD 120.00"} in payload["hard_constraints"]
+        assert {"field": "destination", "value": "NRT"} in payload["preferences"]
+        assert {"field": "preference", "value": "window seat"} in payload["preferences"]
+
+    def test_omits_absent_fields(self) -> None:
+        from journey.models.events import objective_set_payload_from
+        from journey.models.objective import ConstrainedField, ConstraintType, TravelObjective
+
+        objective = TravelObjective(
+            origin=ConstrainedField(value="SIN", constraint_type=ConstraintType.HARD),
+        )
+
+        payload = objective_set_payload_from(objective)
+
+        assert payload == {
+            "hard_constraints": [{"field": "origin", "value": "SIN"}],
+            "preferences": [],
+        }

@@ -137,6 +137,26 @@ cd frontend && npx playwright test --reporter=html
 
 ---
 
+## Three-Interaction Walkthrough (NFR-003, T068)
+
+A complete demonstration journey requires no more than three human
+interactions at the console:
+
+1. **Submit the objective** — the traveller's request that starts the
+   journey (handled upstream of this feature; the console begins observing
+   once `journey_id` exists).
+2. **Approve or refuse the authorisation request** — one click on
+   `[data-testid="auth-approve-button"]` or `[data-testid="auth-refuse-button"]`
+   when the auth gate appears (US2).
+3. **Start the replay** — opening `/journey/{id}/replay` (optionally
+   adjusting `[data-testid="replay-speed-control"]`, which does not count as
+   a fourth interaction — it is a display preference, not a step that
+   advances the journey).
+
+Everything else — the event log, expiry clocks, journey state stepper,
+call budget, and provenance bar — updates automatically from the SSE
+stream with no additional clicks (FR-006, FR-013).
+
 ## References
 
 - SSE endpoint contract: [`contracts/sse_stream.md`](contracts/sse_stream.md)

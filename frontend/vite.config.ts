@@ -18,5 +18,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // e2e/ holds Playwright specs (run via `npx playwright test`), not
+    // Vitest ones — exclude them so Vitest doesn't try to execute them
+    // against the `@playwright/test` test()/expect() globals.
+    exclude: ['**/node_modules/**', '**/e2e/**'],
   },
 })

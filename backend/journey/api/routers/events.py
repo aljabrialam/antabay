@@ -2,11 +2,17 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.sse import EventSourceResponse, ServerSentEvent
+from pydantic import BaseModel
+from typing import Literal
 
 from journey.models.events import JourneyEvent
-from journey.services.event_service import EventService
+from journey.services.event_service import (
+    AuthorisationAlreadyResolvedError,
+    AuthorisationRequestNotFoundError,
+    EventService,
+)
 
 router = APIRouter(prefix="/journeys", tags=["journey-events"])
 
@@ -45,13 +51,60 @@ async def stream_events(
         )
 
 
-@router.get("/{journey_id}/events/replay")
-async def replay_events(journey_id: str, speed: float = 1.0) -> dict[str, str]:
-    """Replay a recorded event stream at a controllable pace (FR-012). Stub until US3."""
-    raise HTTPException(status_code=501, detail="Replay not yet implemented")
+@router.get("/{journey_id}/events/replay", response_class=EventSourceResponse)
+async def replay_events(
+    journey_id: str = Depends(_verify_journey_exists),
+    speed: float = Query(default=1.0, gt=0),
+) -> AsyncGenerator[ServerSentEvent, None]:
+    """Replay a recorded event stream at a controllable pace (FR-012)."""
+    service = EventService()
+    yield ServerSentEvent(
+        id="0",
+        event="replay_started",
+        data={
+            "event_id": f"{journey_id}-replay-started",
+            "payload": {"source_journey_id": journey_id, "speed_multiplier": speed},
+            "simulated": False,
+            "recorded_at": EventService.now_iso(),
+        },
+    )
+    last_sequence = 0
+    async for event in service.replay_events(journey_id, speed):
+        last_sequence = event.sequence
+        yield ServerSentEvent(
+            id=str(event.sequence),
+            event=event.event_type.value,
+            data=_sse_envelope(event),
+        )
+    yield ServerSentEvent(
+        id=str(last_sequence + 1),
+        event="replay_ended",
+        data={
+            "event_id": f"{journey_id}-replay-ended",
+            "payload": {},
+            "simulated": False,
+            "recorded_at": EventService.now_iso(),
+        },
+    )
+
+
+class AuthorisationOutcomeRequest(BaseModel):
+    outcome: Literal["approved", "refused"]
 
 
 @router.post("/{journey_id}/authorisation/{request_id}")
-async def respond_authorisation(journey_id: str, request_id: str) -> dict[str, str]:
-    """Record an observer's approve/refuse decision. Stub until US2."""
-    raise HTTPException(status_code=501, detail="Authorisation response not yet implemented")
+async def respond_authorisation(
+    journey_id: str,
+    request_id: str,
+    body: AuthorisationOutcomeRequest,
+    journey: str = Depends(_verify_journey_exists),
+) -> dict[str, str]:
+    """Record an observer's approve/refuse decision (FR-009)."""
+    service = EventService()
+    try:
+        service.record_auth_outcome(journey_id, request_id, body.outcome)
+    except AuthorisationRequestNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except AuthorisationAlreadyResolvedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"status": "recorded"}

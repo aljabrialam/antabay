@@ -15,6 +15,14 @@ POLL_INTERVAL_SECONDS = 0.5
 _TERMINAL_STATES = {JourneyState.CANCELLED, JourneyState.ABANDONED}
 
 
+class AuthorisationRequestNotFoundError(Exception):
+    """No `authorisation_requested` event exists for this request_id."""
+
+
+class AuthorisationAlreadyResolvedError(Exception):
+    """An `authorisation_outcome` event already exists for this request_id."""
+
+
 class EventService:
     def __init__(self, repository: JourneyRepository | None = None) -> None:
         self._repo = repository if repository is not None else JourneyRepository()
@@ -81,6 +89,47 @@ class EventService:
                     await asyncio.sleep(scaled)
             yield event
             previous = event
+
+    def record_auth_outcome(
+        self, journey_id: str, request_id: str, outcome: str
+    ) -> JourneyEvent:
+        """Resolve an outstanding authorisation request (FR-009).
+
+        Looks up the matching `authorisation_requested` event to recover its
+        `rule_id`, refuses to resolve twice, then appends the outcome event.
+        """
+        events = self._repo.get_events_from_sequence(journey_id, 0)
+        requested = next(
+            (
+                e
+                for e in events
+                if e.event_type is EventType.AUTHORISATION_REQUESTED
+                and e.payload.get("request_id") == request_id
+            ),
+            None,
+        )
+        if requested is None:
+            raise AuthorisationRequestNotFoundError(
+                f"No authorisation request {request_id} for journey {journey_id}"
+            )
+        already_resolved = any(
+            e.event_type is EventType.AUTHORISATION_OUTCOME
+            and e.payload.get("request_id") == request_id
+            for e in events
+        )
+        if already_resolved:
+            raise AuthorisationAlreadyResolvedError(
+                f"Authorisation request {request_id} is already resolved"
+            )
+        return self.append(
+            journey_id,
+            EventType.AUTHORISATION_OUTCOME,
+            {
+                "request_id": request_id,
+                "outcome": outcome,
+                "rule_id": requested.payload["rule_id"],
+            },
+        )
 
     def journey_exists(self, journey_id: str) -> bool:
         return self._repo.journey_exists(journey_id)

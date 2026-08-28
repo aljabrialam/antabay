@@ -168,4 +168,56 @@ describe('TestConsoleReducer US1 cases', () => {
     }
     expect(state.log).toHaveLength(MAX_LOG_ENTRIES)
   })
+
+  it('AUTH_REQUESTED sets pendingAuth and appends to the log', () => {
+    const event = makeEvent('authorisation_requested', {
+      request_id: 'req-1',
+      action: 'Rebook LJ201',
+      cost: '+USD 6.24',
+      objective_effect: 'Preserved',
+      rule_id: 'AUTH-01',
+    })
+    const state = consoleReducer(initialState, { type: 'AUTH_REQUESTED', event })
+    expect(state.log).toHaveLength(1)
+    expect(state.pendingAuth).toEqual({
+      request_id: 'req-1',
+      action: 'Rebook LJ201',
+      cost: '+USD 6.24',
+      objective_effect: 'Preserved',
+      rule_id: 'AUTH-01',
+      status: 'pending',
+    })
+  })
+
+  it('AUTH_OUTCOME clears pendingAuth and appends to the log', () => {
+    const requested = makeEvent('authorisation_requested', {
+      request_id: 'req-1',
+      action: 'Rebook LJ201',
+      cost: '+USD 6.24',
+      objective_effect: 'Preserved',
+      rule_id: 'AUTH-01',
+    })
+    let state = consoleReducer(initialState, { type: 'AUTH_REQUESTED', event: requested })
+    const outcome = makeEvent('authorisation_outcome', {
+      request_id: 'req-1',
+      outcome: 'approved',
+      rule_id: 'AUTH-01',
+    })
+    state = consoleReducer(state, { type: 'AUTH_OUTCOME', event: outcome })
+    expect(state.pendingAuth).toBeNull()
+    expect(state.log).toHaveLength(2)
+  })
+
+  it('REPLAY_STARTED sets replayActive true; REPLAY_ENDED sets it false', () => {
+    const started = makeEvent('replay_started', {
+      source_journey_id: 'journey-1',
+      speed_multiplier: 4,
+    })
+    let state = consoleReducer(initialState, { type: 'REPLAY_STARTED', event: started })
+    expect(state.replayActive).toBe(true)
+
+    const ended = makeEvent('replay_ended', {})
+    state = consoleReducer(state, { type: 'REPLAY_ENDED', event: ended })
+    expect(state.replayActive).toBe(false)
+  })
 })

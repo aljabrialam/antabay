@@ -6,6 +6,26 @@
 
 **Status**: Draft
 
+---
+
+## Business Context
+
+**Business Goal**: Make the agent's behaviour observable in real time, to a
+person watching a screen, without reading logs.
+
+**Business Value**: Three purposes at once: the primary debugging surface
+during development, the artifact by which the product is judged, and a
+recorded output that drives demonstrations without live network access.
+
+**Business Actors**:
+- Traveller — the person whose objective and journey are being observed
+- Observer — the person watching the console, including during development
+  and demonstrations
+
+**Business Capability**: Observability
+
+---
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Live Journey Observation (Priority: P1)
@@ -311,6 +331,16 @@ label is visible; confirm simulated events carry distinct visual marking.
 - **SC-007**: A recorded event stream can be loaded by the test suite as
   a fixture and used to drive assertions against displayed state without
   modification to the recording.
+
+---
+
+## Out of Scope
+
+- Agent reasoning and decision logic
+- External API integration
+- Authentication
+- Multiple concurrent journeys
+- The traveller-facing mobile surface
 
 ---
 
