@@ -6,8 +6,7 @@ importing the other.
 """
 from __future__ import annotations
 
-import httpx
-
+from journey.atlas_auth import atlas_http_client
 from journey.services.event_service import EventService
 from journey.services.flight_search import FlightSearchService
 from journey.services.impact_evaluation_service import ImpactEvaluationService
@@ -18,7 +17,7 @@ from journey.storage.repository import JourneyRepository
 
 def build_impact_evaluation_service() -> ImpactEvaluationService:
     repo = JourneyRepository()
-    http_client = httpx.Client()
+    http_client = atlas_http_client()
     return ImpactEvaluationService(
         repo=repo,
         http_client=http_client,

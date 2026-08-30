@@ -8,6 +8,7 @@ from typing import Any
 
 import httpx
 
+from journey.atlas_auth import atlas_http_client
 from journey.models.events import EventType, JourneyEvent
 from journey.models.journey import JourneyState
 from journey.models.verification_gate import VerificationOutcome
@@ -44,7 +45,7 @@ class WebhookService:
         on_wake: Callable[[str, JourneyEvent], object] | None = None,
     ) -> None:
         self._repo = repository if repository is not None else JourneyRepository()
-        self._http = http_client if http_client is not None else httpx.Client()
+        self._http = http_client if http_client is not None else atlas_http_client()
         self._events = event_service if event_service is not None else EventService(self._repo)
         self._verifier = PostActionVerifier(
             self._repo, {"ticketing": TicketingSuccessCondition()}

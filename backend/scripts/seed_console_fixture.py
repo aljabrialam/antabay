@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from journey.models.events import EventType, objective_set_payload_from
@@ -110,12 +109,16 @@ def seed_auth() -> tuple[str, str]:
     return journey_id, request_id
 
 
-def seed_replay() -> str:
+def seed_replay(fixture_path: Path | None = None) -> str:
+    """Seed a fresh journey with a recorded event stream, replaying its
+    events with the original recorded_at timestamps preserved. Defaults
+    to the fixed console fixture; feature 014's capture_export.load()
+    passes an arbitrary exported capture file instead (research.md R7)."""
     from datetime import datetime
 
     journey_id, _ = _new_journey()
     svc = EventService()
-    fixture = json.loads(FIXTURE_PATH.read_text())
+    fixture = json.loads((fixture_path or FIXTURE_PATH).read_text())
     for row in fixture:
         svc.append(
             journey_id,
@@ -144,4 +147,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

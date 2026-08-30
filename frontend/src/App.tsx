@@ -7,11 +7,18 @@ import { ExpiryClockPanel } from './components/ExpiryClockPanel'
 import { JourneyStateStepper } from './components/JourneyStateStepper'
 import { ObjectivePanel } from './components/ObjectivePanel'
 import { ProvenanceBar } from './components/ProvenanceBar'
+import { TravellerConsole } from './TravellerConsole'
 import { useEventStream } from './hooks/useEventStream'
 
-function parseJourney(pathname: string): { journeyId: string | null; replay: boolean } {
+function parseJourney(
+  pathname: string,
+): { journeyId: string | null; replay: boolean; surface: 'operator' | 'traveller' } {
+  const travellerMatch = pathname.match(/^\/journey\/([^/]+)\/traveller(\/replay)?/)
+  if (travellerMatch) {
+    return { journeyId: travellerMatch[1], replay: Boolean(travellerMatch[2]), surface: 'traveller' }
+  }
   const match = pathname.match(/^\/journey\/([^/]+)(\/replay)?/)
-  return { journeyId: match ? match[1] : null, replay: Boolean(match?.[2]) }
+  return { journeyId: match ? match[1] : null, replay: Boolean(match?.[2]), surface: 'operator' }
 }
 
 interface JourneyConsoleProps {
@@ -61,7 +68,7 @@ function JourneyConsole({ journeyId, replay, speed }: JourneyConsoleProps) {
 }
 
 function App() {
-  const { journeyId, replay } = parseJourney(window.location.pathname)
+  const { journeyId, replay, surface } = parseJourney(window.location.pathname)
   const [speed, setSpeed] = useState(1)
 
   if (!journeyId) {
@@ -74,6 +81,7 @@ function App() {
           <div className="console-col">
             Open <code>/journey/&#123;id&#125;</code> to observe a journey, or{' '}
             <code>/journey/&#123;id&#125;/replay</code> to replay a recording.
+            Add <code>/traveller</code> for the traveller-facing surface.
           </div>
         </main>
       </div>
@@ -104,12 +112,21 @@ function App() {
       {/* Keying on speed forces a clean remount (fresh reducer state) when
           the observer changes the replay pace, instead of appending a
           second replay onto the existing log. */}
-      <JourneyConsole
-        journeyId={journeyId}
-        key={replay ? `replay-${speed}` : 'live'}
-        replay={replay}
-        speed={speed}
-      />
+      {surface === 'traveller' ? (
+        <TravellerConsole
+          journeyId={journeyId}
+          key={replay ? `traveller-replay-${speed}` : 'traveller-live'}
+          replay={replay}
+          speed={speed}
+        />
+      ) : (
+        <JourneyConsole
+          journeyId={journeyId}
+          key={replay ? `replay-${speed}` : 'live'}
+          replay={replay}
+          speed={speed}
+        />
+      )}
     </>
   )
 }
