@@ -4,12 +4,15 @@
 
 Antabay parses a traveller's goal, searches real inventory, defends its choice against cheaper-looking traps, books through a verified travel API, and watches the journey afterwards so it can recover from disruptions on its own. A deterministic policy engine — not the model — decides when a human has to approve something.
 
+[![Watch the demo](https://img.youtube.com/vi/El7PMixAv4c/maxresdefault.jpg)](https://www.youtube.com/watch?v=El7PMixAv4c)
+
 ---
 
 ## Summary
 
 | | |
 |---|---|
+| **Demo video** | [youtube.com/watch?v=El7PMixAv4c](https://www.youtube.com/watch?v=El7PMixAv4c) |
 | **What it is** | An autonomous travel-booking agent with a hard authorisation gate around every action that spends money, voids a booking, or breaks a stated constraint |
 | **Problem solved** | Booking agents that "sort by price and time" pick options that are technically compliant and practically wrong — and once disruption hits, nobody is watching |
 | **How** | Parse the goal into hard constraints + soft preferences → search real inventory → score and defend the selection → book with independent verification at every step → monitor and recover, gated by policy, not by the model's own judgement |
