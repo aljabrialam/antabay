@@ -238,7 +238,7 @@ Two views render from the same event stream: an operator console showing the age
 └──────────────────────────────┴─────────────────────────────────┘
 ```
 
-Reference implementation: [`.antabay/console-mockup.html`](.antabay/console-mockup.html).
+**[→ Open the live, interactive mockup](https://claude.ai/code/artifact/bc5b8338-61f5-4bff-a9f5-1428ee267d4a)** (source: [`.antabay/console-mockup.html`](.antabay/console-mockup.html)).
 
 ## Project structure
 
