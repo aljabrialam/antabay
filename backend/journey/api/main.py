@@ -1,10 +1,12 @@
 import asyncio
 import contextlib
+import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from journey.api.routers.disruption_injector import router as disruption_injector_router
 from journey.api.routers.events import router as events_router
@@ -41,6 +43,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(title="Antabay Journey API", version="0.1.0", lifespan=lifespan)
+
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "*").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(events_router)
 app.include_router(webhooks_router)

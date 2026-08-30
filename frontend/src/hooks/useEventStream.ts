@@ -1,5 +1,6 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source'
 import { useEffect, useReducer, useRef } from 'react'
+import { apiUrl } from '../lib/apiBase'
 import {
   consoleReducer,
   initialState,
@@ -74,8 +75,8 @@ export function useEventStream(
     dispatchAction({ type: 'CONNECTION_STATUS', status: 'connecting' })
 
     const url = replay
-      ? `/journeys/${journeyId}/events/replay?speed=${speed}`
-      : `/journeys/${journeyId}/events`
+      ? apiUrl(`/journeys/${journeyId}/events/replay?speed=${speed}`)
+      : apiUrl(`/journeys/${journeyId}/events`)
 
     fetchEventSource(url, {
       signal: controller.signal,

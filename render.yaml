@@ -1,0 +1,35 @@
+databases:
+  - name: antabay-db
+    plan: free
+    databaseName: antabay
+    user: antabay
+
+services:
+  - type: web
+    name: antabay-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install .
+    startCommand: uvicorn journey.api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: JOURNEY_DB_URL
+        fromDatabase:
+          name: antabay-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: ATLAS_BASE_URL
+        sync: false
+      - key: ATLAS_CLIENT_ID
+        sync: false
+      - key: ATLAS_CLIENT_SECRET
+        sync: false
+      - key: DASHSCOPE_API_KEY
+        sync: false
+      - key: DASHSCOPE_BASE_URL
+        sync: false
+      - key: QWEN_MODEL
+        sync: false

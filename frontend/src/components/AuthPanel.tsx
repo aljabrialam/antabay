@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiUrl } from '../lib/apiBase'
 import type { AuthorisationRequest } from '../types/events'
 
 export interface AuthPanelProps {
@@ -13,7 +14,7 @@ export function AuthPanel({ journeyId, pendingAuth }: AuthPanelProps) {
     setSubmitting(true)
     try {
       await fetch(
-        `/journeys/${journeyId}/authorisation/${pendingAuth.request_id}`,
+        apiUrl(`/journeys/${journeyId}/authorisation/${pendingAuth.request_id}`),
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
